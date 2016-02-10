@@ -1,13 +1,14 @@
 #!/bin/bash -l
 
 #. /usr/share/Modules/init/bash
-module load samtools/0.1.18
-module load bowtie2/2.1.0
-module load Python/2.7
+#module load samtools/0.1.18
+#module load bowtie2/2.1.0
+#module load Python/2.7
 #module load tabix/0.2.6
 #module load vcftools/0.1.11
 #module load freebayes/9.9.2-6
 module load freebayes/0.9.21
+module load srst2/0.1.7
 
 ###This script is used to predict non-bLactam antibiotic resistance using both read mapping and assembly.###
 
@@ -116,8 +117,10 @@ fi
 
 cd "$out_dir"
 ###Detect Spn serotype sequence###
-mod-srst2.py --input_pe "$readPair_1" "$readPair_2" --output "$out_nameMiscRes" --log --save_scores --min_coverage 99 --max_divergence 5 --gene_db "$miscDrug_ref"
-mod-srst2.py --input_pe "$readPair_1" "$readPair_2" --output "$out_nameVancRes" --log --save_scores --min_coverage 99 --max_divergence 20 --gene_db "$vanc_ref"
+#mod-srst2.py --input_pe "$readPair_1" "$readPair_2" --output "$out_nameMiscRes" --log --save_scores --min_coverage 99 --max_divergence 5 --gene_db "$miscDrug_ref"
+#mod-srst2.py --input_pe "$readPair_1" "$readPair_2" --output "$out_nameVancRes" --log --save_scores --min_coverage 99 --max_divergence 20 --gene_db "$vanc_ref"
+srst2 --samtools_args "\-A" --input_pe "$readPair_1" "$readPair_2" --output "$out_nameMiscRes" --log --save_scores --min_coverage 99.9 --max_divergence 5 --gene_db "$miscDrug_ref"
+srst2 --samtools_args "\-A" --input_pe "$readPair_1" "$readPair_2" --output "$out_nameVancRes" --log --save_scores --min_coverage 99.9 --max_divergence 20 --gene_db "$vanc_ref"
 
 ###mpileup the 'MISC__.*.sorted.bam and create the called variants file with freebayes. Don't use vcf2fq b/c it won't call indels###
 miscR_bam=$(ls MISC_*sorted.bam)

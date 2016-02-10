@@ -8,12 +8,13 @@ read -a PARAM <<< $(/bin/sed -n ${SGE_TASK_ID}p $1/job-control.txt)
 
 ###Load Modules###
 #. /usr/share/Modules/init/bash
-module load samtools/0.1.18
-module load bowtie2/2.1.0
-module load Python/2.7
+#module load samtools/0.1.18
+#module load bowtie2/2.1.0
+#module load Python/2.7
 #module load tabix/0.2.6
 #module load vcftools/0.1.11
 module load freebayes/0.9.21
+module load srst2/0.1.7
 
 ###This script is called for each job in the qsub array. The purpose of this code is to read in and parse a line of the job-control.txt file 
 ###created by 'StrepLab-JanOw_Spn-wrapr.sh' and pass that information, as arguments, to other programs responsible for various parts of strain 
@@ -43,12 +44,14 @@ sampleName=$(echo "$readPair_1" | awk -F"/" '{print $NF}' | sed 's/_S1_.*_001.fa
 #echo "The sampleName is: $sampleName"
 
 ###Call MLST###
-mod-srst2.py --mlst_delimiter '_' --input_pe "$readPair_1" "$readPair_2" --output "$out_nameMLST" --save_scores --mlst_db "$mlst_ref" --mlst_definitions "$mlst_def"
+#mod-srst2.py --mlst_delimiter '_' --input_pe "$readPair_1" "$readPair_2" --output "$out_nameMLST" --save_scores --mlst_db "$mlst_ref" --mlst_definitions "$mlst_def"
+srst2 --samtools_args "\-A" --mlst_delimiter '_' --input_pe "$readPair_1" "$readPair_2" --output "$out_nameMLST" --save_scores --mlst_db "$mlst_ref" --mlst_definitions "$mlst_def"
 ###Check and extract new MLST alleles###
 MLST_allele_checkr.pl "$out_nameMLST"__mlst__Streptococcus_pneumoniae__results.txt "$out_nameMLST"__*.Streptococcus_pneumoniae.sorted.bam "$mlst_ref"
 
 ###Detect Spn serotype sequence###
-mod-srst2.py --input_pe "$readPair_1" "$readPair_2" --output "$out_nameTYPE" --save_scores --min_coverage 99 --max_divergence 5 --gene_db "$SeroT_ref"
+#mod-srst2.py --input_pe "$readPair_1" "$readPair_2" --output "$out_nameTYPE" --save_scores --min_coverage 99 --max_divergence 5 --gene_db "$SeroT_ref"
+srst2 --samtools_args "\-A" --input_pe "$readPair_1" "$readPair_2" --output "$out_nameTYPE" --save_scores --min_coverage 99.9 --max_divergence 5 --gene_db "$SeroT_ref"
 
 ###mpileup the '.*_TYPE__.*.sorted.bam and create the called variants file with freebayes. Don't use vcf2fq b/c it won't call indels###
 seroT_bam=$(ls TYPE_*sorted.bam)
@@ -78,6 +81,9 @@ fi
 
 ###Predict the other drug resistances###
 miscRes_Typer.sh -1 "$readPair_1" -2 "$readPair_2" -r "$miscDrug_ref" -v "$vancDrug_ref" -n "$out_name"
+
+
+
 
 #: <<'END'
 ###Output the serotype/MLST/drug resistance data for this sample to it's results output file###
