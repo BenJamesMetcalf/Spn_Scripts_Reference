@@ -55,7 +55,12 @@ MLST_allele_checkr.pl "$out_nameMLST"__mlst__Streptococcus_pneumoniae__results.t
 SPN_serotyper.sh -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir/seroT_Gene-DB_Final.fasta" -n "$out_nameSERO"
 
 ###Call GBS bLactam Resistances###
+module unload perl/5.12.3
+module load perl/5.16.1-MT
 SPN_PBP-Gene_Typer.pl -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir/MOD_bLactam_resistance.fasta" -n "$out_namePBP"
+module unload perl/5.16.1-MT
+module load perl/5.22.1
+module load vcftools/0.1.14
 
 ###Call GBS Misc. Resistances###
 SPN_miscRes_Typer.pl -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir" -m miscDrug_Gene-DB_Final.fasta -v vanDrug_Gene-DB_Final.fasta -n "$out_nameMISC"
