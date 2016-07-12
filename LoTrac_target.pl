@@ -307,8 +307,10 @@ foreach (@query_names) {
     print "match length threshold: $match_len\n";
 
     if ($best_iden >= $match_iden && $best_len >= $match_len) {
-	my $prodigal_fna = `extractFastaByID.pl $best_name < prodigal_"$outName".fna`;
-	my $prodigal_faa = `extractFastaByID.pl $best_name < prodigal_"$outName".faa`;
+	#my $prodigal_fna = `extractFastaByID.pl $best_name < prodigal_"$outName".fna`;
+	#my $prodigal_faa = `extractFastaByID.pl $best_name < prodigal_"$outName".faa`;
+	my $prodigal_fna = extractFastaByID($best_name,"prodigal_$outName.fna");
+	my $prodigal_faa = extractFastaByID($best_name,"prodigal_$outName.faa");
 	print $exOUT "$prodigal_fna\n$prodigal_faa\n\n";
     } else {
 	open ( my $errOUT, ">>", $error_out ) or die "Could not open file $error_out: $!";

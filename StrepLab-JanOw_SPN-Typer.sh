@@ -47,15 +47,15 @@ out_nameRES=RES_"$just_name"
 out_namePLAS=PLAS_"$just_name"
 
 ###Call MLST###
-#srst2 --samtools_args "\-A" --mlst_delimiter '_' --input_pe "$readPair_1" "$readPair_2" --output "$out_nameMLST" --save_scores --mlst_db "$allDB_dir/Streptococcus_pneumoniae.fasta" --mlst_definitions "$allDB_dir/spneumoniae.txt" --min_coverage 99.999
+srst2 --samtools_args "\-A" --mlst_delimiter '_' --input_pe "$readPair_1" "$readPair_2" --output "$out_nameMLST" --save_scores --mlst_db "$allDB_dir/Streptococcus_pneumoniae.fasta" --mlst_definitions "$allDB_dir/spneumoniae.txt" --min_coverage 99.999
 ###Check and extract new MLST alleles###
-#MLST_allele_checkr.pl "$out_nameMLST"__mlst__Streptococcus_pneumoniae__results.txt "$out_nameMLST"__*.Streptococcus_pneumoniae.sorted.bam "$allDB_dir/Streptococcus_pneumoniae.fasta"
+MLST_allele_checkr.pl "$out_nameMLST"__mlst__Streptococcus_pneumoniae__results.txt "$out_nameMLST"__*.Streptococcus_pneumoniae.sorted.bam "$allDB_dir/Streptococcus_pneumoniae.fasta"
 
 ###Call GBS Serotype###
-#SPN_serotyper.sh -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir/seroT_Gene-DB_Final.fasta" -n "$out_nameSERO"
+SPN_serotyper.sh -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir/seroT_Gene-DB_Final.fasta" -n "$out_nameSERO"
 
 ###Call GBS bLactam Resistances###
-#SPN_PBP-Gene_Typer.pl -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir/MOD_bLactam_resistance.fasta" -n "$out_namePBP"
+SPN_PBP-Gene_Typer.pl -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir/MOD_bLactam_resistance.fasta" -n "$out_namePBP"
 
 ###Call GBS Misc. Resistances###
 SPN_miscRes_Typer.pl -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir" -m miscDrug_Gene-DB_Final.fasta -v vanDrug_Gene-DB_Final.fasta -n "$out_nameMISC"
@@ -83,7 +83,7 @@ sampl_out="SAMPLE_Isolate__Typing_Results.txt"
 
 printf "$just_name\n" >> "$sampl_out"
 printf "$just_name\t" >> "$tabl_out"
-: <<EOF
+#: <<EOF
 ###SEROTYPE OUTPUT###
 printf "\tSerotype:\n" >> "$sampl_out"
 lineNum=$(cat TEMP_SeroType_Results.txt | wc -l)
@@ -183,7 +183,7 @@ else
 	fi
     done < TEMP_pbpID_Results.txt
 fi
-EOF
+#EOF
 
 ###MISC. RESISTANCE###
 printf "\tMisc. GBS Resistance:\n" >> "$sampl_out"

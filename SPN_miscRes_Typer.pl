@@ -432,8 +432,9 @@ my $REF_seq = extractFastaByID("7__FOLA__FOLA-1__7","$misc_DB");
 `echo "$REF_seq" > TEMP_FOLA_Ref.fna`;
 system("LoTrac_target.pl -1 $fastq1 -2 $fastq2 -q TEMP_FOLA_Ref.fna -S 2.2M -f -n $justName -o $outDir");
 my $FOLA_file = glob("EXTRACT_*FOLA*.fasta");
+my $FOLA_error = glob("ERROR_*FOLA*.fasta");
 my @FOLA_output;
-if ($FOLA_file) {
+if ($FOLA_file && ! $FOLA_error) {
     my $FOLA_seq_hedr = `cat $FOLA_file | grep ">" | tail -n1 | sed 's/>//g'`;
     chomp($FOLA_seq_hedr);
     my $FOLA_seq = extractFastaByID("$FOLA_seq_hedr","$FOLA_file");
