@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 
 use strict;
 use warnings;
@@ -352,7 +352,14 @@ foreach (@query_names) {
 		print $fh "$best_name\t$frag_start\t$frag_end\n";
 		close $fh;
 		my $extract_frag_frwd = `bedtools getfasta -fi ./velvet_output/contigs.fa -bed TEMP_frwd_extract.bed -fo stdout`;
-		print $exOUT "$extract_frag_frwd\n";
+		if($extract_frag_frwd) {
+		    print $exOUT "$extract_frag_frwd\n";
+		} else {
+		    open ( my $errOUT, ">>", $error_out ) or die "Could not open file $error_out: $!";
+		    print $errOUT "Frag Extraction: The best blast hit ($best_name) for $query_name fragment didn't meet minimum criteria of length and identity to call a true match\n\n";
+		    close $errOUT;
+		    next;
+		}
 	    } elsif ($bestArray[9] < $bestArray[8]) {
 		#my $query_extract = $query_strt - 500;
 		my $blast_endDiff = $query_length - $bestArray[7];
@@ -363,13 +370,19 @@ foreach (@query_names) {
 		close $fh;
 
 		my $extract_frag_rev = `bedtools getfasta -tab -fi ./velvet_output/contigs.fa -bed TEMP_rev_extract.bed -fo stdout`;
-		print "extract frag is:\n$extract_frag_rev\n";
-		my @rev_frag_array = split('\t',$extract_frag_rev);
-		my $rev_comp_frag = reverse($rev_frag_array[1]);
-		$rev_comp_frag =~ tr/ATGCatgc/TACGtacg/;
-
-		print $exOUT ">$rev_frag_array[0]";
-		print $exOUT "$rev_comp_frag\n";
+		if ($extract_frag_rev) {
+		    #print "extract frag is:\n$extract_frag_rev\n";
+		    my @rev_frag_array = split('\t',$extract_frag_rev);
+		    my $rev_comp_frag = reverse($rev_frag_array[1]);
+		    $rev_comp_frag =~ tr/ATGCatgc/TACGtacg/;
+		    print $exOUT ">$rev_frag_array[0]";
+		    print $exOUT "$rev_comp_frag\n";
+		} else {
+		    open ( my $errOUT, ">>", $error_out ) or die "Could not open file $error_out: $!";
+		    print $errOUT "Frag Extraction: The best blast hit ($best_name) for $query_name fragment didn't meet minimum criteria of length and identity to call a true match\n\n";
+		    close $errOUT;
+		    next;	   
+		}
 	    }
 	} else {
 	    open ( my $errOUT, ">>", $error_out ) or die "Could not open file $error_out: $!";

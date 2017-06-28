@@ -101,15 +101,20 @@ fi
 ###Create the batch output files###
 batch_name=$(echo "$batch_dir" | awk -F"/" '{print $(NF-3)}')
 #printf "Sample_Name\temm_Type\temm_Seq\t%_identity\tmatch_length\n" >> "$out_analysis"/JanOw_"$batch_name"_emmType_results.txt
-#printf "Sample\tSerotype\tST\taroe\tgdh_\tgki_\trecP\tspi_\txpt_\tddl_\tPBP_Code(1A:2B:2X)\tMisc_Resistance\tGen_Resistance\tPlasmid_Target\n" >> "$out_analysis"/TABLE_SPN_"$batch_name"_Typing_Results.txt
-printf "Sample\tMisc_Resistance\tGen_Resistance\tPlasmid_Target\n" >> "$out_analysis"/TABLE_SPN_"$batch_name"_Typing_Results.txt  ###JUST TEMPORARY###
+printf "Sample\tSerotype\tST\taroe\tgdh\tgki\trecP\tspi\txpt\tddl\tPBP_1A\tPBP_2B\tPBP_2X\tMisc_Resistance\tGen_Resistance\tPlasmid_Target\n" >> "$out_analysis"/TABLE_SPN_"$batch_name"_Typing_Results.txt
 
 ###Will search thru every file in the batch directory and check if it matches the following regexs: _L.*_R1_001.fastq and _L.*_R2_001.fastq###
 ###If both paired end fastq files are found then the full paths of each file will be written to the 'job-control.txt' file###
 batch_dir_star="${batch_dir}/*"
 for sample in $batch_dir_star
 do
-    sampl_name=$(echo "$sample" | sed 's/^.*\///g' | sed 's/_S[0-9]\+_.*_001.fastq.gz//g')
+    if [[ "$sample" =~ _S[0-9]+_L[0-9]+_R._001.fastq ]]
+    then
+	sampl_name=$(echo "$sample" | sed 's/^.*\///g' | sed 's/_S[0-9]\+_.*_001.fastq.gz//g')
+    elif [[ "$sample" =~ _[1|2].fastq.gz ]]
+    then
+	sampl_name=$(echo "$sample" | sed 's/^.*\///g' | sed 's/_[1|2].fastq.gz//g')
+    fi
     sampl_out="${out_analysis}"/"${sampl_name}"
     eval sampl_out=$sampl_out
     echo The sample file is: $sample
@@ -126,6 +131,9 @@ do
     elif [[ $sample =~ _L.*_R1_001.fastq && $sample =~ S[0-9]+ ]]
     then
         readPair_1=$sample
+    elif [[ $sample =~ .*_1.fastq.gz ]]
+    then
+        readPair_1=$sample
     fi
 
     if [[ $sample =~ _L.*_R2_001.fastq && ! $sample =~ S[0-9]+ ]]
@@ -135,6 +143,9 @@ do
     elif [[ $sample =~ _L.*_R2_001.fastq && $sample =~ S[0-9]+ ]]
     then
         readPair_2=$sample
+    elif [[ $sample =~ .*_2.fastq.gz ]]
+    then
+	readPair_2=$sample
     fi
 
     if [ -n "$readPair_1" -a -n "$readPair_2" ]
@@ -156,7 +167,7 @@ done
 
 
 ###Send the jobs out on the cluster with each sample running in parallel###
-qsub -sync y -q all.q -t 1-$(cat $out_jobCntrl/job-control.txt | wc -l) -cwd -o "$out_qsub" -e "$out_qsub" ./StrepLab-JanOw_SPN-Typer.sh $out_jobCntrl
+qsub -sync y -q dbd.q -t 1-$(cat $out_jobCntrl/job-control.txt | wc -l) -cwd -o "$out_qsub" -e "$out_qsub" ./StrepLab-JanOw_SPN-Typer.sh $out_jobCntrl
 
 ###Output the emm type/MLST/drug resistance data for this sample to it's results output file###
 while read -r line

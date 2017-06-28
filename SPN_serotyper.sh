@@ -2,13 +2,13 @@
 
 #export PATH=/scicomp/home/ycm6/TEMP_GBS-Typing:$PATH
 temp_path=$(pwd)
-export PATH=$PATH:$temp_path
+export PATH=$PATH:$temp_path:"/scicomp/groups/OID/NCIRD/DBD/RDB/Strep_Lab/JanOw_Dependencies"
 
 ###Load Modules###
 . /usr/share/Modules/init/bash
 module load freebayes/0.9.21
 module load srst2/0.1.7
-
+module load vcftools/0.1.14
 ###This script is used to predict SPN serotype using SRST2.###
 
 while getopts :1:2:r:o:n: option

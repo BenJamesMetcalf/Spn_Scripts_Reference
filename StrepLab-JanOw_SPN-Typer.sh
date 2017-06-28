@@ -10,12 +10,13 @@ read -a PARAM <<< $(/bin/sed -n ${SGE_TASK_ID}p $1/job-control.txt)
 
 ###Load Modules###
 #. /usr/share/Modules/init/bash
-module load perl/5.12.3
+module load perl/5.22.1
 module load ncbi-blast+/2.2.29
 module load BEDTools/2.17.0
-module load Python/2.7
+#module load Python/2.7
 module load freebayes/0.9.21
 module load prodigal/2.60
+module load cutadapt/1.8
 module load srst2/0.1.7
 
 ###This script is called for each job in the qsub array. The purpose of this code is to read in and parse a line of the job-control.txt file
@@ -36,7 +37,16 @@ cd "$sampl_out"
 batch_name=$(echo "$readPair_1" | awk -F"/" '{print $(NF-4)}')
 out_name=$(echo "$readPair_1" | awk -F"/" '{print $(NF-4)"--"$(NF)}' | sed 's/_S[0-9]\+_L[0-9]\+_R[0-9]\+.*//g')  ###Use This For Batches off the MiSeq###
 #out_name=$(echo "$readPair_1" | awk -F"/" '{print $(NF-1)"--"$(NF)}' | sed 's/_S[0-9]\+_L[0-9]\+_R[0-9]\+.*//g')   ###Otherwise Use This###
-just_name=$(echo "$readPair_1" | awk -F"/" '{print $(NF)}' | sed 's/_S[0-9]\+_L[0-9]\+_R[0-9]\+.*//g')
+
+if [[ "$readPair_1" =~ _S[0-9]+_L[0-9]+_R1_001.fastq ]]
+then
+    just_name=$(echo "$readPair_1" | awk -F"/" '{print $(NF)}' | sed 's/_S[0-9]\+_L[0-9]\+_R[0-9]\+.*//g')
+    #echo "if condition matches!"
+else
+    just_name=$(echo "$readPair_1" | awk -F"/" '{print $(NF)}' | sed 's/_1.fastq.*//g')
+    #echo "if condition doesn't match"
+fi
+
 out_nameMLST=MLST_"$just_name"
 out_nameSERO=SERO_"$just_name"
 out_nameMISC=MISC_"$just_name"
@@ -46,8 +56,22 @@ out_nameARG=ARG_"$just_name"
 out_nameRES=RES_"$just_name"
 out_namePLAS=PLAS_"$just_name"
 
+###Pre-Process Paired-end Reads###
+fastq1_trimd=cutadapt_"$just_name"_S1_L001_R1_001.fastq
+fastq2_trimd=cutadapt_"$just_name"_S1_L001_R2_001.fastq
+cutadapt -b AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -q 20 --minimum-length 50 --paired-output temp2.fastq -o temp1.fastq $readPair_1 $readPair_2
+cutadapt -b AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGATCTCGGTGGTCGCCGTATCATT -q 20 --minimum-length 50 --paired-output $fastq1_trimd -o $fastq2_trimd temp2.fastq temp1.fastq
+rm temp1.fastq
+rm temp2.fastq
+module load fastqc/0.11.5
+mkdir "$just_name"_R1_cut
+mkdir "$just_name"_R2_cut
+fastqc "$fastq1_trimd" --outdir=./"$just_name"_R1_cut
+fastqc "$fastq2_trimd" --outdir=./"$just_name"_R2_cut
+module unload fastqc/0.11.5
+
 ###Call MLST###
-srst2 --samtools_args "\-A" --mlst_delimiter '_' --input_pe "$readPair_1" "$readPair_2" --output "$out_nameMLST" --save_scores --mlst_db "$allDB_dir/Streptococcus_pneumoniae.fasta" --mlst_definitions "$allDB_dir/spneumoniae.txt" --min_coverage 99.999
+srst2 --samtools_args '\\-A' --mlst_delimiter '_' --input_pe "$readPair_1" "$readPair_2" --output "$out_nameMLST" --save_scores --mlst_db "$allDB_dir/Streptococcus_pneumoniae.fasta" --mlst_definitions "$allDB_dir/spneumoniae.txt" --min_coverage 99.999
 ###Check and extract new MLST alleles###
 MLST_allele_checkr.pl "$out_nameMLST"__mlst__Streptococcus_pneumoniae__results.txt "$out_nameMLST"__*.Streptococcus_pneumoniae.sorted.bam "$allDB_dir/Streptococcus_pneumoniae.fasta"
 
@@ -55,7 +79,12 @@ MLST_allele_checkr.pl "$out_nameMLST"__mlst__Streptococcus_pneumoniae__results.t
 SPN_serotyper.sh -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir/seroT_Gene-DB_Final.fasta" -n "$out_nameSERO"
 
 ###Call GBS bLactam Resistances###
-SPN_PBP-Gene_Typer.pl -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir/MOD_bLactam_resistance.fasta" -n "$out_namePBP"
+module unload perl/5.22.1
+module load perl/5.16.1-MT
+#SPN_PBP-Gene_Typer.pl -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir/MOD_bLactam_resistance.fasta" -n "$out_namePBP"
+PBP-Gene_Typer.pl -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir/MOD_bLactam_resistance.fasta" -n "$out_namePBP" -s SPN -p 1A,2B,2X
+module unload perl/5.16.1-MT
+module load perl/5.22.1
 
 ###Call GBS Misc. Resistances###
 SPN_miscRes_Typer.pl -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir" -m miscDrug_Gene-DB_Final.fasta -v vanDrug_Gene-DB_Final.fasta -n "$out_nameMISC"
@@ -67,7 +96,7 @@ srst2 --samtools_args '\\-A' --input_pe "$readPair_1" "$readPair_2" --output "$o
 srst2 --samtools_args '\\-A' --input_pe "$readPair_1" "$readPair_2" --output "$out_nameRES" --log --save_scores --min_coverage 70 --max_divergence 30 --gene_db "$allDB_dir/ResFinder.fasta"
 
 ###Type PlasmidFinder Resistance Gene###
-srst2 --samtools_args '\\-A' --input_pe "$readPair_1" "$readPair_2" --output "$out_namePLAS" --log --save_scores --min_coverage 70 --max_divergence 30 --gene_db "$allDB_dir/PlasmidFinder.fasta"
+#srst2 --samtools_args '\\-A' --input_pe "$readPair_1" "$readPair_2" --output "$out_namePLAS" --log --save_scores --min_coverage 70 --max_divergence 30 --gene_db "$allDB_dir/PlasmidFinder.fasta"
 
 #Add in perl script to find contamination threshold here
 contamination_level=10
@@ -157,33 +186,58 @@ do
 done < "$out_nameMLST"__mlst__Streptococcus_pneumoniae__results.txt
 
 ###PBP_ID OUTPUT###
-printf "\tPBP_ID Code:\n" >> "$sampl_out"
-lineNum=$(cat TEMP_pbpID_Results.txt | wc -l)
-if [[ "$lineNum" -eq 1 ]]
-then
-    #if the file only contains the header line then no PBP results were found
-    firstLine=$(head -n1 TEMP_pbpID_Results.txt)
-    printf "\t\t$firstLine\n\t\tNo_PBP_Type\n" >> "$sampl_out"
-    #printf "$firstLine\t" >> TEMP_table_title.txt
-    printf "No_PBP_Type\t" >> "$tabl_out"
-else
-    count=0
-    while read -r line
-    do
-	count=$(( $count + 1 ))
-        #justPBPs=$(echo "$line" | cut -f2-4)
-	justPBPs=$(echo "$line" | awk -F"\t" '{print $2}')
-	if [[ "$count" -eq 1 ]]
-	then
-            printf "\t\t$justPBPs\n" >> "$sampl_out"
-            #printf "$justPBPs\t" >> TEMP_table_title.txt
-	else
-            printf "\t\t$justPBPs\n" >> "$sampl_out"
-            printf "$justPBPs\t" >> "$tabl_out"
-	fi
-    done < TEMP_pbpID_Results.txt
-fi
-#EOF
+#printf "\tPBP_ID Code:\n" >> "$sampl_out"
+#lineNum=$(cat TEMP_pbpID_Results.txt | wc -l)
+#if [[ "$lineNum" -eq 1 ]]
+#then
+#    #if the file only contains the header line then no PBP results were found
+#    firstLine=$(head -n1 TEMP_pbpID_Results.txt)
+#    printf "\t\t$firstLine\n\t\tNo_PBP_Type\n" >> "$sampl_out"
+#    #printf "$firstLine\t" >> TEMP_table_title.txt
+#    printf "No_PBP_Type\t" >> "$tabl_out"
+#else
+#    count=0
+#    while read -r line
+#    do
+#	count=$(( $count + 1 ))
+#        #justPBPs=$(echo "$line" | cut -f2-4)
+#	justPBPs=$(echo "$line" | awk -F"\t" '{print $2}')
+#	if [[ "$count" -eq 1 ]]
+#	then
+#            printf "\t\t$justPBPs\n" >> "$sampl_out"
+#            #printf "$justPBPs\t" >> TEMP_table_title.txt
+#	else
+#            printf "\t\t$justPBPs\n" >> "$sampl_out"
+#            printf "$justPBPs\t" >> "$tabl_out"
+#	fi
+#    done < TEMP_pbpID_Results.txt
+#fi
+##EOF
+
+
+
+###PBP_ID Output###
+PBP1A="NF"
+PBP2B="NF"
+PBP2X="NF"
+sed 1d TEMP_pbpID_Results.txt | while read -r line
+do
+    if [[ -n "$line" ]]
+    then
+        #justPBPs=$(echo "$line" | awk -F"\t" '{print $2}' | tr ':' '\t')
+        #justPBP_BIN=$(echo "$line" | awk -F"\t" '{print $2}' | tr ':' ',')
+	PBP1A=$(echo "$line" | awk -F"\t" '{print $2}' | awk -F":" '{print $1}')
+	PBP2B=$(echo "$line" | awk -F"\t" '{print $2}' | awk -F":" '{print $2}')
+	PBP2X=$(echo "$line" | awk -F"\t" '{print $2}' | awk -F":" '{print $3}')
+    fi
+    #printf "$justPBPs\t" >> "$tabl_out"
+    #printf "$justPBP_BIN," >> "$bin_out"
+    printf "$PBP1A\t$PBP2B\t$PBP2X\t" >> "$tabl_out"
+done
+
+
+
+
 
 ###MISC. RESISTANCE###
 printf "\tMisc. GBS Resistance:\n" >> "$sampl_out"
@@ -408,10 +462,12 @@ printf "\n" >> "$tabl_out"
 
 
 ###Unload Modules###
-module unload perl/5.12.3
+#module unload perl/5.12.3
+module unload perl/5.22.1
 module unload ncbi-blast+/2.2.29
 module unload BEDTools/2.17.0
-module unload Python/2.7
+#module unload Python/2.7
 module unload freebayes/0.9.21
 module unload prodigal/2.60
+module unload cutadapt/1.8
 module unload srst2/0.1.7

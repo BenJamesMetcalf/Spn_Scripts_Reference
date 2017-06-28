@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/bin/env perl
 
 use strict;
 use warnings;
@@ -317,6 +317,7 @@ open(my $fh,'>',$miscR_output) or die "Could not open file '$miscR_output' $!";
 print $fh "Target\tMatch_Type\tResistance\tCoverage\n";
 
 my $justName = `echo $outName | sed 's/MISC_//g'`;
+chomp($justName);
 my $outName_VANC = "VANC_".$justName;
 chomp($outName_VANC);
 system("srst2 --samtools_args '\\-A' --input_pe $fastq1 $fastq2 --output $outName --log --save_scores --min_coverage 99.9 --max_divergence 5 --gene_db $misc_DB");
