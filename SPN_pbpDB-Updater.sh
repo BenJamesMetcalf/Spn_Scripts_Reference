@@ -165,17 +165,17 @@ blastTyper () {
 		   #pbp1A_out=$(echo $pbp_out | sed 's/^NEW:/'$pbpAlleleID':/g')
 		   echo "New PBP 1A: $pbpAlleleID"
                    #echo "$line" | awk -v var="$pbp1A_out" -v OFS='\t' '{$11=var; print }' >> "$5"_PRE
-		   echo "$line" | awk -v var="$pbpAlleleID" -v OFS='\t' '{$11=var; print }' >> "$5"_PRE
+		   echo "$line" | awk -v var="$pbpAlleleID" -v OFS='\t' '{$12=var; print }' >> "$5"_PRE
                elif [[ "$4" == "2B" ]]
                then
                    #pbp2B_out=$(echo $pbp_out | sed 's/:NEW:/:'$pbpAlleleID':/g')
 		   echo "New PBP 2B: $pbpAlleleID"
-                   echo "$line" | awk -v var="$pbpAlleleID" -v OFS='\t' '{$12=var; print }' >> "$5"_PRE
+                   echo "$line" | awk -v var="$pbpAlleleID" -v OFS='\t' '{$13=var; print }' >> "$5"_PRE
                elif [[ "$4" == "2X" ]]
                then
 		   #pbp2X_out=$(echo $pbp_out | sed 's/:NEW$/:'$pbpAlleleID'/g')
 		   echo "New PBP 2X: $pbpAlleleID"
-		   echo "$line" | awk -v var="$pbpAlleleID" -v OFS='\t' '{$13=var; print }' >> "$5"_PRE
+		   echo "$line" | awk -v var="$pbpAlleleID" -v OFS='\t' '{$14=var; print }' >> "$5"_PRE
                fi
            else
                echo "$line" >> "$5"_PRE
