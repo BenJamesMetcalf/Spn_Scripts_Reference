@@ -109,7 +109,7 @@ for sample in $batch_dir_star
 do
     if [[ "$sample" =~ _S[0-9]+_L[0-9]+_R._001.fastq ]]
     then
-	sampl_name=$(echo "$sample" | sed 's/^.*\///g' | sed 's/_S[09]\_.*_001.fastq.gz//g')
+	sampl_name=$(echo "$sample" | sed 's/^.*\///g' | sed 's/_S[0-9]\+\_.*_001.fastq.gz//g')
     elif [[ "$sample" =~ _[1|2].fastq.gz ]]
     then
 	sampl_name=$(echo "$sample" | sed 's/^.*\///g' | sed 's/_[1|2].fastq.gz//g')
