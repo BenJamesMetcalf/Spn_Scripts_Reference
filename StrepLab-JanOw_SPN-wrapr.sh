@@ -107,48 +107,61 @@ printf "Sample\tSerotype\tPili\tST\taroe\tgdh\tgki\trecP\tspi\txpt\tddl\tPBP1A\t
 batch_dir_star="${batch_dir}/*"
 for sample in $batch_dir_star
 do
-    sampl_name=$(echo "$sample" | sed 's/^.*\///g' | sed 's/_S[0-9]\+_.*_001.fastq.gz//g')
+    if [[ "$sample" =~ _S[0-9]+_L[0-9]+_R._001.fastq ]]
+    then
+	sampl_name=$(echo "$sample" | sed 's/^.*\///g' | sed 's/_S[09]\_.*_001.fastq.gz//g')
+    elif [[ "$sample" =~ _[1|2].fastq.gz ]]
+    then
+	sampl_name=$(echo "$sample" | sed 's/^.*\///g' | sed 's/_[1|2].fastq.gz//g')
+    fi
     sampl_out="${out_analysis}"/"${sampl_name}"
     eval sampl_out=$sampl_out
     echo The sample file is: $sample
+
     if [[ $sampl_name =~ ^Undetermined ]]
     then
-        echo "Skipping the 'Undetermined' fastq files"
-        continue
+	echo "Skipping the 'Undetermined' fastq files"
+	continue
     fi
 
     if [[ $sample =~ _L.*_R1_001.fastq && ! $sample =~ S[0-9]+ ]]
     then
-        readPair_1=$(echo "$sample" | sed 's/_L\([0-9]\+\)_R1/_S1_L\1_R1/g')
-        mv $sample $readPair_1
+	readPair_1=$(echo "$sample" | sed 's/_L\([0-9]\+\)_R1/_S1_L\1_R1/g')
+	mv $sample $readPair_1
     elif [[ $sample =~ _L.*_R1_001.fastq && $sample =~ S[0-9]+ ]]
     then
-        readPair_1=$sample
+	readPair_1=$sample
+    elif [[ $sample =~ .*_1.fastq.gz ]]
+    then
+	readPair_1=$sample
     fi
 
     if [[ $sample =~ _L.*_R2_001.fastq && ! $sample =~ S[0-9]+ ]]
     then
-        readPair_2=$(echo "$sample" | sed 's/_L\([0-9]\+\)_R2/_S1_L\1_R2/g')
-        mv $sample $readPair_2
+	readPair_2=$(echo "$sample" | sed 's/_L\([0-9]\+\)_R2/_S1_L\1_R2/g')
+	mv $sample $readPair_2
     elif [[ $sample =~ _L.*_R2_001.fastq && $sample =~ S[0-9]+ ]]
     then
-        readPair_2=$sample
+	readPair_2=$sample
+    elif [[ $sample =~ .*_2.fastq.gz ]]
+    then
+	readPair_2=$sample
     fi
 
     if [ -n "$readPair_1" -a -n "$readPair_2" ]
     then
-        if [[ ! -d "$sampl_out" ]]
-        then
-            mkdir "$sampl_out"
-        fi
-        echo "Both Forward and Reverse Read files exist."
-        echo "Paired-end Read-1 is: $readPair_1"
-        echo "Paired-end Read-2 is: $readPair_2"
-        printf "\n"
-        echo "$readPair_1 $readPair_2 $allDB_dir $out_analysis $sampl_out" >> $out_jobCntrl/job-control.txt
+	if [[ ! -d "$sampl_out" ]]
+	then
+	    mkdir "$sampl_out"
+	fi
+	echo "Both Forward and Reverse Read files exist."
+	echo "Paired-end Read-1 is: $readPair_1"
+	echo "Paired-end Read-2 is: $readPair_2"
+	printf "\n"
+	echo "$readPair_1 $readPair_2 $allDB_dir $out_analysis $sampl_out" >> $out_jobCntrl/job-control.txt
         ###Prepare script for next sample###
-        readPair_1=""
-        readPair_2=""
+	readPair_1=""
+	readPair_2=""
     fi
 done
 
