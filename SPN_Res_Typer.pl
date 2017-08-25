@@ -447,17 +447,17 @@ while(<MYINPUTFILE>) {
 if ($Res_Targets{"ERMB"} eq "pos" && $Res_Targets{"ERMTR"} eq "neg") {
     my $ERMB_out = "ERMB";
     if ($Res_Targets{"ERMBS"} eq "pos") {
-	$ERMB_out = "ERMB:ERMBS";
+        $ERMB_out = $ERMB_out.":ERMBS";
     }
     if ($Res_Targets{"ERMBUP"} eq "pos") {
-	$ERMB_out = "ERMB:ERMBS:ERMBUP";
+        $ERMB_out = $ERMB_out.":ERMBUP";
     }
 
     if ($drugRes_Col{"EC"} eq "neg") {
-	$drugRes_Col{"EC"} = "$ERMB_out";
+        $drugRes_Col{"EC"} = "$ERMB_out";
     } else {
-	my $new_val = $drugRes_Col{"EC"}.":$ERMB_out";
-	$drugRes_Col{"EC"} = $new_val;
+        my $new_val = $drugRes_Col{"EC"}.":$ERMB_out";
+        $drugRes_Col{"EC"} = $new_val;
     }
 }
 
@@ -491,26 +491,26 @@ while(<MYINPUTFILE>) {
                 }
                 $Res_Targets{"ERMB"} = "pos";
             }
-        } elsif ($miscR_fullgene[3] =~ m/LNU/i) {
-            if ($Res_Targets{"LNUB"} eq "neg") {
-                if ($drugRes_Col{"EC"} eq "neg") {
-                    $drugRes_Col{"EC"} = "LNU";
-                } else {
-                    my $new_val = $drugRes_Col{"EC"}.":LNU";
-                    $drugRes_Col{"EC"} = $new_val;
-                }
-                $Res_Targets{"LNUB"} = "pos";
-            }
-        } elsif ($miscR_fullgene[3] =~ m/LSA/i) {
-            if ($Res_Targets{"LSA"} eq "neg") {
-                if ($drugRes_Col{"EC"} eq "neg") {
-                    $drugRes_Col{"EC"} = "LSA";
-                } else {
-                    my $new_val = $drugRes_Col{"EC"}.":LSA";
-                    $drugRes_Col{"EC"} = $new_val;
-                }
-                $Res_Targets{"LSA"} = "pos";
-            }
+        #} elsif ($miscR_fullgene[3] =~ m/LNU/i) {
+        #    if ($Res_Targets{"LNUB"} eq "neg") {
+        #        if ($drugRes_Col{"EC"} eq "neg") {
+        #            $drugRes_Col{"EC"} = "LNU";
+        #        } else {
+        #            my $new_val = $drugRes_Col{"EC"}.":LNU";
+        #            $drugRes_Col{"EC"} = $new_val;
+        #        }
+        #        $Res_Targets{"LNUB"} = "pos";
+        #    }
+        #} elsif ($miscR_fullgene[3] =~ m/LSA/i) {
+        #    if ($Res_Targets{"LSA"} eq "neg") {
+        #        if ($drugRes_Col{"EC"} eq "neg") {
+        #            $drugRes_Col{"EC"} = "LSA";
+        #        } else {
+        #            my $new_val = $drugRes_Col{"EC"}.":LSA";
+        #            $drugRes_Col{"EC"} = $new_val;
+        #        }
+        #        $Res_Targets{"LSA"} = "pos";
+        #    }
         } elsif ($miscR_fullgene[3] =~ m/MEF/i) {#&& $Res_Targets{"MEF"} eq "neg") {
             if ($Res_Targets{"MEF"} eq "neg") {
                 if ($drugRes_Col{"EC"} eq "neg") {
@@ -611,7 +611,7 @@ if ($FOLA_file && ! $FOLA_error) {
     my $FOLA_aaSeq = sixFrame_Translate($FOLA_seq,1);
     my $FOLA_aaRef = "QDVQSVLDWYQDQEKNLYII";
     print "FOLA Seq: $FOLA_aaRef || $FOLA_aaSeq || $FOLA_seq\n";
-    if ($FOLA_aaSeq ne "QDVQSVLDWYQDQEKNLYII") {
+    if ($FOLA_aaSeq !~ /QDVQSVL[D|G]WYQ[D|V|A]QEKNLYII/) {
 	#push(@sxR_tmR_array,"yes");
         my $mask = $FOLA_aaSeq ^ $FOLA_aaRef;
         my @seq_diffs;
@@ -619,7 +619,9 @@ if ($FOLA_file && ! $FOLA_error) {
             print substr($FOLA_aaRef,$-[0],1), ' ', substr($FOLA_aaSeq,$-[0],1), ' ', $-[0], "\n";
             #my $diff_element = "pos".($-[0]+1).":".substr($RPOB_aaRef,$-[0],1)."->".substr($RPOB_aaSeq,$-[0],1);
             my $diff_element = substr($FOLA_aaRef,$-[0],1).($-[0]+1).substr($FOLA_aaSeq,$-[0],1);
-            push(@seq_diffs,$diff_element);
+	    if ($diff_element !~ /D12[A|V]/ && $diff_element ne "D8G") {
+		push(@seq_diffs,$diff_element);
+	    }
         }
         print "FOLA seq: $FOLA_seq\n";
         my $diff_output = join(',',@seq_diffs);
@@ -647,14 +649,16 @@ if ($Res_Targets{"PARC"} eq "pos") {
     my $PARC_aaSeq = sixFrame_Translate($PARC_seq,1);
     my $PARC_aaRef = "DSSIYDAMVRMSQNWKNREILVEMHGNNGSMDGDPPAAMRYTEARLSEIAGYLLQDIEKKTVPFAWNFDD";
     print "PARCgbs sequence: $PARC_seq || $PARC_aaSeq\n";
-    if ($PARC_aaSeq ne "DSSIYDAMVRMSQNWKNREILVEMHGNNGSMDGDPPAAMRYTEARLSEIAGYLLQDIEKKTVPFAWNFDD") {
+    if ($PARC_aaSeq !~ /DSSIYDAMVRMSQNWKN[R|C]EILVEMHGNNGSMDGDPPAAMRYTEARLSEIA[G|D]YLLQDIEK[K|N]TVPFAWNFDD/) {
         my $mask = $PARC_aaSeq ^ $PARC_aaRef;
         my @seq_diffs;
         while ($mask =~ /[^\0]/g) {
             print substr($PARC_aaRef,$-[0],1), ' ', substr($PARC_aaSeq,$-[0],1), ' ', $-[0], "\n";
             #my $diff_element = "pos".($-[0]+1).":".substr($RPOB_aaRef,$-[0],1)."->".substr($RPOB_aaSeq,$-[0],1);
             my $diff_element = substr($PARC_aaRef,$-[0],1).($-[0]+1).substr($PARC_aaSeq,$-[0],1);
-            push(@seq_diffs,$diff_element);
+            if ($diff_element ne "G51D" && $diff_element ne "K60N" && $diff_element ne "R18C") {
+		push(@seq_diffs,$diff_element);
+	    }
         }
         print "PARC seq: $PARC_seq\n";
         my $diff_output = join(',',@seq_diffs);
@@ -707,7 +711,7 @@ if ($Res_Targets{"GYRA"} eq "pos") {
 ###Type the RPLD and RPLV Macrolide and Streptogramins targets###
 ###The RPLD-1 marker for MQD-1 resistance may contain mosiac regions and must be extracted from the genome assembly###
 if ($Res_Targets{"RPLD1"} eq "pos") {
-    my $RPLD1_ref = extractFastaByID("11__RPLD1__RPLD-1__11",$res_DB);
+    my $RPLD1_ref = extractFastaByID("11__RPLD1__RPLD1-1__11",$res_DB);
     `echo "$RPLD1_ref" > TEMP_RPLD1_Ref.fna`;
     module "unload perl/5.22.1";
     module "load perl/5.16.1-MT";
@@ -750,17 +754,19 @@ if ($Res_Targets{"RPLD1"} eq "pos") {
 }
 
 if ($Res_Targets{"RPLD2"} eq "pos") {
-    my $RPLD2_seq = freebayes_prior_fix($RES_bam, $res_DB, "12__RPLD__RPLD-2__12");
+    my $RPLD2_seq = freebayes_prior_fix($RES_bam, $res_DB, "12__RPLD2__RPLD2-1__12");
     my $RPLD2_aaSeq = sixFrame_Translate($RPLD2_seq,1);
     my $RPLD2_aaRef = "DAVFGIEPNESVVFDVI";
-    if ($RPLD2_aaSeq ne "DAVFGIEPNESVVFDVI") {
+    if ($RPLD2_aaSeq !~ /DAVFGIEPN[E|K]SV[V|E]FDVI/) {
         print "RPLD2 seq: $RPLD2_seq\n";
 	my $mask = $RPLD2_aaSeq ^ $RPLD2_aaRef;
 	my @seq_diffs;
 	while ($mask =~ /[^\0]/g) {
 	    print substr($RPLD2_aaRef,$-[0],1), ' ', substr($RPLD2_aaSeq,$-[0],1), ' ', $-[0], "\n";
 	    my $diff_element = substr($RPLD2_aaRef,$-[0],1).($-[0]+1).substr($RPLD2_aaSeq,$-[0],1);
-	    push(@seq_diffs,$diff_element);
+	    if ($diff_element ne "E10K" && $diff_element ne "V13E") {
+		push(@seq_diffs,$diff_element);
+	    }
         }
         my $diff_output = join(',',@seq_diffs);
         #my $bin_out = join(':',@seq_diffs);
@@ -776,7 +782,7 @@ if ($Res_Targets{"RPLD2"} eq "pos") {
 }
 
 if ($Res_Targets{"RPLV1"} eq "pos") {
-    my $RPLV1_seq = freebayes_prior_fix($RES_bam, $res_DB, "13__RPLV1__RPLV-1__13");
+    my $RPLV1_seq = freebayes_prior_fix($RES_bam, $res_DB, "13__RPLV1__RPLV1-1__13");
     my $RPLV1_aaSeq = sixFrame_Translate($RPLV1_seq,1);
     my $RPLV1_aaRef = "KRTAHITVA";
     if ($RPLV1_aaSeq ne "KRTAHITVA") {
@@ -802,10 +808,10 @@ if ($Res_Targets{"RPLV1"} eq "pos") {
 }
 
 if ($Res_Targets{"RPLV2"} eq "pos") {
-    my $RPLV2_seq = freebayes_prior_fix($RES_bam, $res_DB, "14__RPLV2__RPLV-1__14");
+    my $RPLV2_seq = freebayes_prior_fix($RES_bam, $res_DB, "14__RPLV2__RPLV2-1__14");
     my $RPLV2_aaSeq = sixFrame_Translate($RPLV2_seq,1);
-    my $RPLV2_aaRef = "KRTAHITVA";
-    if ($RPLV2_aaSeq ne "KRTAHITVA") {
+    my $RPLV2_aaRef = "PTMKRFRPRA";
+    if ($RPLV2_aaSeq ne "PTMKRFRPRA") {
         print "RPLV2 seq: $RPLV2_seq\n";
         my $mask = $RPLV2_aaSeq ^ $RPLV2_aaRef;
         my @seq_diffs;
@@ -921,7 +927,7 @@ while(<MYINPUTFILE>) {
         print "FOLP DP: $1 | ref allele: $ref_allele | alt allele: $alt_allele\n";
 	my $FOLP_dp = $1;
 	my $FOLP_loc = $FOLP_line[1];
-        if (length($ref_allele) != length($alt_allele) && $FOLP_dp >= 10) {
+        if (length($ref_allele) != length($alt_allele) && $FOLP_dp >= 2) {
 	    my $FOLP_out;
             if (length($ref_allele) > length($alt_allele)) {
 		$FOLP_out = "FOLP_".$FOLP_loc."-del";

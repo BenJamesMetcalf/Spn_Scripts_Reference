@@ -97,16 +97,20 @@ blastTyper () {
         pbpStop="yes"
     fi
 
-    isBlastDB=$(ls "$refSeq"/"$pbpName"_prot_blast_db*)
+    #isBlastDB=$(ls "$refSeq"/"$pbpName"_prot_blast_db*)
+    isBlastDB=$(ls "$refSeq"/Blast_bLactam_"$pbpName"_prot_DB*)
     if [[ "$pbpStop" == "no" ]]
     then
         if [[ -z "$isBlastDB" ]]
         then
             ### Make blast database
-            makeblastdb -in "$2" -dbtype prot -out "$refSeq"/"$pbpName"_prot_blast_db
-            blastp -db "$refSeq"/"$pbpName"_prot_blast_db -query "$1" -outfmt 6 -out "$SampleName"_blast-out_"$pbpName".txt
+            #makeblastdb -in "$2" -dbtype prot -out "$refSeq"/"$pbpName"_prot_blast_db
+            #blastp -db "$refSeq"/"$pbpName"_prot_blast_db -query "$1" -outfmt 6 -out "$SampleName"_blast-out_"$pbpName".txt
+	    makeblastdb -in "$2" -dbtype prot -out "$refSeq"/Blast_bLactam_"$pbpName"_prot_DB
+	    blastp -db "$refSeq"/Blast_bLactam_"$pbpName"_prot_DB -query "$1" -outfmt 6 -out "$SampleName"_blast-out_"$pbpName".txt
         else
-            blastp -db "$refSeq"/"$pbpName"_prot_blast_db -query "$1" -outfmt 6 -out "$SampleName"_blast-out_"$pbpName".txt
+            #blastp -db "$refSeq"/"$pbpName"_prot_blast_db -query "$1" -outfmt 6 -out "$SampleName"_blast-out_"$pbpName".txt
+	    blastp -db "$refSeq"/Blast_bLactam_"$pbpName"_prot_DB -query "$1" -outfmt 6 -out "$SampleName"_blast-out_"$pbpName".txt
         fi
 
         cat "$SampleName"_blast-out_"$pbpName".txt | sort -r -n -k12,12 -k3,3 -k4,4 | sed -n 1p > prot_best_blast.txt
@@ -146,8 +150,10 @@ blastTyper () {
             ###Output the new allele to Final_newRef_Seq.faa and add it to the database###
             cat Single_newRef_Seq.faa >> "$2"
             echo "Remaking blast database"
-	    rm "$refSeq"/"$pbpName"_prot_blast_db*
-	    makeblastdb -in "$2" -dbtype prot -out "$refSeq"/"$pbpName"_prot_blast_db
+	    #rm "$refSeq"/"$pbpName"_prot_blast_db*
+	    #makeblastdb -in "$2" -dbtype prot -out "$refSeq"/"$pbpName"_prot_blast_db
+	    rm "$refSeq"/Blast_bLactam_"$pbpName"_prot_DB*
+	    makeblastdb -in "$2" -dbtype prot -out "$refSeq"/Blast_bLactam_"$pbpName"_prot_DB
             rm Single_newRef_Seq.faa
         fi
     fi  
@@ -159,21 +165,16 @@ blastTyper () {
 	   samplName=$(echo "$3" | sed 's/PBP_//g')
            if [[ "$samplName" == "$lineName" ]]
            then
-	       #pbp_out=$(echo "$line" | awk -F"\t" '{print $11}')
                if [[ "$4" == "1A" ]]
                then
-		   #pbp1A_out=$(echo $pbp_out | sed 's/^NEW:/'$pbpAlleleID':/g')
 		   echo "New PBP 1A: $pbpAlleleID"
-                   #echo "$line" | awk -v var="$pbp1A_out" -v OFS='\t' '{$11=var; print }' >> "$5"_PRE
 		   echo "$line" | awk -v var="$pbpAlleleID" -v OFS='\t' '{$12=var; print }' >> "$5"_PRE
                elif [[ "$4" == "2B" ]]
                then
-                   #pbp2B_out=$(echo $pbp_out | sed 's/:NEW:/:'$pbpAlleleID':/g')
 		   echo "New PBP 2B: $pbpAlleleID"
                    echo "$line" | awk -v var="$pbpAlleleID" -v OFS='\t' '{$13=var; print }' >> "$5"_PRE
                elif [[ "$4" == "2X" ]]
                then
-		   #pbp2X_out=$(echo $pbp_out | sed 's/:NEW$/:'$pbpAlleleID'/g')
 		   echo "New PBP 2X: $pbpAlleleID"
 		   echo "$line" | awk -v var="$pbpAlleleID" -v OFS='\t' '{$14=var; print }' >> "$5"_PRE
                fi

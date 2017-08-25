@@ -207,7 +207,7 @@ while(<MYINPUTFILE>) {
 #print Dumper(\%srst2HSH);
 
 my %singlTarg95 = ( 
-    'WZY1' => '1', 'WZY2' => '2', 'WCHE3' => '3', 'WZY4' => '4', 'WZY5' => '5', 'WZY8' => '8', 'WCRG10A' => '10A', 'GTF10F' => '10F', 'WZY11A' => '11A', 'WZY11BC' => '11B/C', 
+    'WZY1' => '1', 'WZY2' => '2', 'WCHE3' => '3', 'WZY4' => '4', 'WZY5' => '5', 'WZY8' => '8', 'WCRG10A' => '10A', 'GTF10F' => '10F', 'WZY11A' => '11A', 'WZY11B:11C' => '11B/C', 
     'WCII12A:12B:46' => '12A/B:46', 'WCII12F' => '12F', 'WZY13' => '13', 'WZY14' => '14', 'WZY16F' => '16F', 'GTF17F' => '17F', 'WZY20' => '20', 'WZY21' => '21', 
     'WZY23A' => '23A', 'WZY23B' => '23B', 'WZY23F' => '23F', 'WZY24F:24A:24B' => '24A/B/F', 'WCYE25A:25F' => '25A/F', 'WZY28A' => '28A', 'WZY31' => '31', 'TTS' => '37', 
     'WZY34' => '34', 'WZY35A' => '35A', 'WZY35C:42' => '35C/42', 'WCRO35F' => '35F', 'WHAI47F' => '47F', 'WCYV38' => '38', 'RRGA' => 'PI-1', 'PITB' => 'PI-2',
@@ -337,8 +337,12 @@ if (exists $srst2{WZY15A}) {
 if (exists $srst2{WZY15B}) {
     if ($srst2{WCIZ15B} && ! @{$srst2{WCIZ15B}}[4]) {
 	print $fh "@{$srst2{WZY15B}}[0]:@{$srst2{WCIZ15B}}[0]\tND:-\t@{$srst2{WZY15B}}[3]:@{$srst2{WCIZ15B}}[3]\t15B\n";
-    } elsif ($srst2{WCIZ15B} && @{$srst2{WCIZ15B}}[4]) {
-	print $fh "@{$srst2{WZY15B}}[0]:@{$srst2{WCIZ15B}}[0]\tND:@{$srst2{WCIZ15B}}[4]\t@{$srst2{WZY15B}}[3]:@{$srst2{WCIZ15B}}[3]\t15B:15C\n";
+    } elsif (! $srst2{WCIZ15B} || ($srst2{WCIZ15B} && @{$srst2{WCIZ15B}}[4])) {
+	if ($srst2{WCIZ15B}) {
+	    print $fh "@{$srst2{WZY15B}}[0]:@{$srst2{WCIZ15B}}[0]\tND:@{$srst2{WCIZ15B}}[4]\t@{$srst2{WZY15B}}[3]:@{$srst2{WCIZ15B}}[3]\t15C\n";
+	} else {
+	    print $fh "@{$srst2{WZY15B}}[0]:-\tND:-\t@{$srst2{WZY15B}}[3]:-\t15C\n";
+        }
     }
 }
 
@@ -358,8 +362,12 @@ if (exists $srst2{WZY22F} && exists $srst2{WCWA22A}) {
     print $fh "@{$srst2{WZY22F}}[0]:@{$srst2{WCWA22F}}[0]\tND:ND\t@{$srst2{WZY22F}}[3]:@{$srst2{WCWA22F}}[3]\t22F\n";
 }
 
-if (exists $srst2{WZY33F} && exists $srst2{WCJE33A}) {
-    print $fh "@{$srst2{WZY33F}}[0]:@{$srst2{WCJE33A}}[0]\tND:ND\t@{$srst2{WZY33F}}[3]:@{$srst2{WCJE33A}}[3]\t33A\n";
+if (exists $srst2{WZY33F}) {
+    if (exists $srst2{WCJE33A} && ! @{$srst2{WCJE33A}}[4]) {
+	print $fh "@{$srst2{WZY33F}}[0]:@{$srst2{WCJE33A}}[0]\tND:ND\t@{$srst2{WZY33F}}[3]:@{$srst2{WCJE33A}}[3]\t33A\n";
+    } else {
+	print $fh "@{$srst2{WZY33F}}[0]\tND\t@{$srst2{WZY33F}}[3]\t33F\n";
+    }
 }
 
 close $fh;
