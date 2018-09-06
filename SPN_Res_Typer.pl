@@ -626,7 +626,8 @@ if ($FOLA_file && ! $FOLA_error) {
 	    }
         }
         print "FOLA seq: $FOLA_seq\n";
-        my $diff_output = join(',',@seq_diffs);
+        #my $diff_output = join(',',@seq_diffs);
+        my $diff_output = join('-',@seq_diffs);
         #my $bin_out = join(':',@seq_diffs);
         #$Bin_Res_arr[6] = $bin_out;
         my $FOLA_out = "FOLA-".$diff_output;

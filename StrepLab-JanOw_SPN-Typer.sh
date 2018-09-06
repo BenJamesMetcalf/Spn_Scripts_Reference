@@ -66,11 +66,12 @@ module unload perl/5.16.1-MT
 module load perl/5.22.1
 
 ###Predict bLactam MIC###
-scr1="/scicomp/groups/OID/NCIRD/DBD/RDB/Strep_Lab/External/share/PBP_AA_to_MIC/scripts/PBP_AA_sampledir_to_MIC_20170710.sh"
+scr1="/scicomp/groups/OID/NCIRD/DBD/RDB/Strep_Lab/External/share/PBP_AA_to_MIC/scripts//PBP_AA_sampledir_to_MIC_20180710.sh"
 bash "$scr1" "$sampl_out"
 
 ###Call GBS Misc. Resistances###
 SPN_Res_Typer.pl -1 "$readPair_1" -2 "$readPair_2" -d "$allDB_dir" -r SPN_Res_Gene-DB_Final.fasta -n "$just_name"
+SPN_Target2MIC.pl OUT_Res_Results.txt "$just_name"
 
 ###Output the emm type/MLST/drug resistance data for this sample to it's results output file###
 tabl_out="TABLE_Isolate_Typing_results.txt"
@@ -141,25 +142,64 @@ do
 done
 
 ###bLactam Predictions###
-sed 1d "BLACTAM_MIC_RF.txt" | while read -r line
-do
-    bLacTab=$(echo "$line" | tr ' ' '\t')
+#sed 1d "BLACTAM_MIC_RF.txt" | while read -r line
+#sed 1d "BLACTAM_MIC_RF_with_SIR.txt" | while read -r line
+#do
+#    pbpID=$(tail -n1 "TEMP_pbpID_Results.txt" | awk -F"\t" '{print $2}')
+#    if [[ ! "$pbpID" =~ .*NF.* ]] && [[ ! "$pbpID" =~ .*NEW.* ]]
+#    then
+#	echo "No NF or NEW outputs for PBP Type"
+#	bLacTab=$(echo "$line" | tr ' ' '\t')
+#	printf "$bLacTab\t" >> "$tabl_out"
+#	bLacCom=$(echo "$line" | tr ' ' ',')
+#	printf "$bLacCom," >> "$bin_out"
+#    else
+#	echo "One of the PBP types has an NF or NEW"
+#	printf "NF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\t" >> "$tabl_out"
+#	printf "NF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF," >> "$bin_out"
+#    fi
+#done
+
+pbpID=$(tail -n1 "TEMP_pbpID_Results.txt" | awk -F"\t" '{print $2}')
+if [[ ! "$pbpID" =~ .*NF.* ]] && [[ ! "$pbpID" =~ .*NEW.* ]]
+then
+    echo "No NF or NEW outputs for PBP Type"
+    bLacTab=$(tail -n1 "BLACTAM_MIC_RF_with_SIR.txt" | tr ' ' '\t')
     printf "$bLacTab\t" >> "$tabl_out"
-    bLacCom=$(echo "$line" | tr ' ' ',')
-    printf "$bLacCom," >> "$bin_out"
-done
+    #bLacCom=$(echo "$line" | tr ' ' ',')
+    #printf "$bLacCom," >> "$bin_out"
+else
+    echo "One of the PBP types has an NF or NEW"
+    printf "NF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\t" >> "$tabl_out"
+    #printf "NF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF," >> "$bin_out"
+fi
+
 
 ###Resistance Targets###
 while read -r line
 do
-    RES_targ=$(echo "$line" | cut -f2)
-    printf "$RES_targ\t" >> "$tabl_out"
-done < OUT_Res_Results.txt
-cat BIN_Res_Results.txt | sed 's/$/,/g' >> "$bin_out"
+    #RES_targ=$(echo "$line" | cut -f2)
+    #printf "$RES_targ\t" >> "$tabl_out"
+    printf "$line\t" | tr ',' '\t' >> "$tabl_out"
+done < RES-MIC_"$just_name"
 
-printf "\n" >> "$tabl_out"
-printf "\n" >> "$bin_out"
+if [[ -e $(echo ./velvet_output/*_Logfile.txt) ]]
+then
+    vel_metrics=$(echo ./velvet_output/*_Logfile.txt)
+    print "velvet metrics file: $vel_metrics\n";
+    velvetMetrics.pl -i "$vel_metrics";
+    line=$(cat velvet_qual_metrics.txt | tr ',' '\t')
+    printf "$line\t" >> "$tabl_out"
 
+    printf "$readPair_1\t" >> "$tabl_out";
+    pwd | xargs -I{} echo {}"/velvet_output/contigs.fa" >> "$tabl_out"
+else
+    printf "NA\tNA\tNA\tNA\t$readPair_1\tNA\n" >> "$tabl_out"
+fi
+#printf "\n" >> "$tabl_out"
+
+#printf "\n" >> "$bin_out"
+#cat BIN_Res_Results.txt | sed 's/$/,/g' >> "$bin_out"
 
 
 ###Remove Temporary Files###
