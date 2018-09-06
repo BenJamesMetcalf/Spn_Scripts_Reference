@@ -10,6 +10,8 @@ use Env;
 use lib $ENV{MODULESHOME}."/init";
 use perl;
 
+print Dumper \%INC;
+
 ###MODULE LOAD###
 #module load samtools/0.1.18
 #module load bowtie2/2.1.0
