@@ -324,7 +324,7 @@ system("srst2 --samtools_args '\\-A' --input_pe $fastq1 $fastq2 --output $out_na
 ###Type ResFinder Resistance Genes###
 system("srst2 --samtools_args '\\-A' --input_pe $fastq1 $fastq2 --output $out_nameRESFI --log --save_scores --min_coverage 70 --max_divergence 30 --gene_db $ref_dir/ResFinder.fasta");
 ###Type FOLP Resistance Gene###
-system("srst2 --samtools_args '\\-A' --input_pe $fastq1 $fastq2 --output $out_nameFOLP --log --save_scores --min_coverage 95.0 --max_divergence 15 --gene_db $ref_dir/SPN_FOLP_Gene-DB_Final.fasta");
+#system("srst2 --samtools_args '\\-A' --input_pe $fastq1 $fastq2 --output $out_nameFOLP --log --save_scores --min_coverage 95.0 --max_divergence 15 --gene_db $ref_dir/SPN_FOLP_Gene-DB_Final.fasta");
 #=cut
 
 my @TEMP_RES_bam = glob("RES_*\.sorted\.bam");
@@ -900,19 +900,30 @@ if ($Res_Targets{"R23S2"} eq "pos") {
 ###############################################################################################
 ###Type the FOLP-1 Sulfonamide resistance target###
 my $target = "1__FOLP__FOLP-1__1";
-my @TEMP_FOLP_bam = glob("FOLP_*\.sorted\.bam");
-my $bamFile = $TEMP_FOLP_bam[0];
-(my $samFile = $bamFile) =~ s/\.bam/\.sam/g;
-system("samtools view -h $bamFile > $samFile");
-system("cat $samFile | grep -E \"^\@HD|^\@SQ.*$target|^\@PG\" > FOLP_target_seq.sam");
-system("awk -F'\t' '\$3 == \"$target\" {print \$0}' $samFile >> FOLP_target_seq.sam");
-system("samtools view -bS FOLP_target_seq.sam > FOLP_target_seq.bam");
-system("samtools index FOLP_target_seq.bam FOLP_target_seq.bai");
-$REF_seq = extractFastaByID("$target","$ref_dir/SPN_FOLP_Gene-DB_Final.fasta");
-open(my $rf,'>',"FOLP_target_ref.fna");
-print $rf "$REF_seq\n";
-close $rf;
-system("freebayes -q 20 -p 1 -f FOLP_target_ref.fna FOLP_target_seq.bam -v FOLP_target_seq.vcf");
+#my @TEMP_FOLP_bam = glob("FOLP_*\.sorted\.bam");
+#my $bamFile = $TEMP_FOLP_bam[0];
+#(my $samFile = $bamFile) =~ s/\.bam/\.sam/g;
+#system("samtools view -h $bamFile > $samFile");
+#system("cat $samFile | grep -E \"^\@HD|^\@SQ.*$target|^\@PG\" > FOLP_target_seq.sam");
+#system("awk -F'\t' '\$3 == \"$target\" {print \$0}' $samFile >> FOLP_target_seq.sam");
+#system("samtools view -bS FOLP_target_seq.sam > FOLP_target_seq.bam");
+#system("samtools index FOLP_target_seq.bam FOLP_target_seq.bai");
+
+module "load bowtie2/2.1.0";
+module "load samtools/0.1.18";
+system("bowtie2 -1 $fastq1 -2 $fastq2 --very-sensitive-local --no-unal -a -x $ref_dir/SPN_FOLP_Gene-DB_Final.fasta -S FOLP_target_seq.sam");
+system("samtools view -bS FOLP_target_seq.sam | samtools sort - FOLP_target_seq_sort");
+system("samtools index FOLP_target_seq_sort.bam");
+system("freebayes -q 25 -p1 -f $ref_dir/SPN_FOLP_Gene-DB_Final.fasta FOLP_target_seq_sort.bam -v FOLP_target_seq.vcf");
+#system("vcffilter -f 'QUAL > 100 & DP > 25' -g 'GQ > 30 & AO > 20 & GT = 1' TEMP_FOLP_target_seq.vcf > FOLP_target_seq.vcf");
+module "unload bowtie2/2.1.0";
+module "unload samtools/0.1.18";
+
+#$REF_seq = extractFastaByID("$target","$ref_dir/SPN_FOLP_Gene-DB_Final.fasta");
+#open(my $rf,'>',"FOLP_target_ref.fna");
+#print $rf "$REF_seq\n";
+#close $rf;
+#system("freebayes -q 20 -p 1 -f FOLP_target_ref.fna FOLP_target_seq.bam -v FOLP_target_seq.vcf");
 open(MYINPUTFILE, "FOLP_target_seq.vcf");
 my %srst2_seroT;
 while(<MYINPUTFILE>) {
@@ -930,7 +941,7 @@ while(<MYINPUTFILE>) {
         print "FOLP DP: $1 | ref allele: $ref_allele | alt allele: $alt_allele\n";
 	my $FOLP_dp = $1;
 	my $FOLP_loc = $FOLP_line[1];
-        if (length($ref_allele) != length($alt_allele) && $FOLP_dp >= 2) {
+        if (length($ref_allele) != length($alt_allele) && $FOLP_dp >= 5) {
 	    my $FOLP_out;
             if (length($ref_allele) > length($alt_allele)) {
 		$FOLP_out = "FOLP_".$FOLP_loc."-del";

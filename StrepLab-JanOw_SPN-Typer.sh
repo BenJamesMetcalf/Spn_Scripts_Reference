@@ -161,15 +161,15 @@ done
 #done
 
 pbpID=$(tail -n1 "TEMP_pbpID_Results.txt" | awk -F"\t" '{print $2}')
-if [[ ! "$pbpID" =~ .*NF.* ]] && [[ ! "$pbpID" =~ .*NEW.* ]]
+if [[ ! "$pbpID" =~ .*NF.* ]] #&& [[ ! "$pbpID" =~ .*NEW.* ]]
 then
-    echo "No NF or NEW outputs for PBP Type"
+    echo "No NF outputs for PBP Type"
     bLacTab=$(tail -n1 "BLACTAM_MIC_RF_with_SIR.txt" | tr ' ' '\t')
     printf "$bLacTab\t" >> "$tabl_out"
     #bLacCom=$(echo "$line" | tr ' ' ',')
     #printf "$bLacCom," >> "$bin_out"
 else
-    echo "One of the PBP types has an NF or NEW"
+    echo "One of the PBP types has an NF"
     printf "NF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\t" >> "$tabl_out"
     #printf "NF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF," >> "$bin_out"
 fi

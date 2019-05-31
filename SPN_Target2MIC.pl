@@ -129,7 +129,7 @@ if ($left_side eq "yes") {
 }
 
 ###COT Category###
-$drug{SXT} = "=,0.5/9.5,S";
+$drug{SXT} = "=,0.5,S";
 @Res_targs = split(':',$Res_hash{COT});
 my $newTarg = "no";
 if ($Res_hash{"COT"} eq "neg") {
@@ -139,15 +139,15 @@ if ($Res_hash{"COT"} eq "neg") {
     if (grep(/FOLA.*I20L/i,@Res_targs)) {
 	if (grep(/FOLP_.*-ins/i,@Res_targs)) {
 	    print "Found I20L AND FOLP insert\n";
-            $drug{SXT} = ">=,4.76,S";
+            $drug{SXT} = ">=,4,R";
 	} else {
 	    print "Found I20L\n";
-	    $drug{SXT} = "=,1/19-2/38,I";
+	    $drug{SXT} = "=,2,I";
 	}
     #} elsif (grep(/FOLP_.*-ins/i,@Res_targs) && (!grep(/FOLA/i,@Res_targs) || grep(/^FOLA-(I20L|D12N)$/i,@Res_targs))) {
     } elsif (grep(/FOLP_.*-ins/i,@Res_targs) && (!grep(/FOLA/i,@Res_targs) || grep(/^FOLA-D12N$/i,@Res_targs))) {
 	print "Found FOLP insert\n";
-	$drug{SXT} = "=,1/19-2/38,I";
+	$drug{SXT} = "=,2,I";
     } elsif (!grep(/^FOLA-D12N$/i,@Res_targs)) {
 	print "Found new COT target\n";
         $drug{SXT} = "Flag,Flag,Flag";
