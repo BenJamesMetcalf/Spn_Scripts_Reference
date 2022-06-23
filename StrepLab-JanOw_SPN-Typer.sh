@@ -26,7 +26,7 @@ readPair_2=${PARAM[1]}
 allDB_dir=${PARAM[2]}
 batch_out=${PARAM[3]}
 sampl_out=${PARAM[4]}
-
+delete='true'
 
 ###Start Doing Stuff###
 cd "$sampl_out"
@@ -202,12 +202,32 @@ fi
 #cat BIN_Res_Results.txt | sed 's/$/,/g' >> "$bin_out"
 
 
-###Remove Temporary Files###
-#rm cutadapt*.fastq
-#rm *.pileup
-#rm *.bam
-#rm *.sam
-#rm TEMP*
+###Remove Unneeded Files###
+if ${delete};
+then
+    echo "The delete flag is true. Will delete all unneeded files"
+    rm *.pileup
+    rm *.*sorted.*am
+    rm *.scores
+    rm *ARGannot_r1.*
+    rm *__genes__*
+    rm *log
+    rm *Results.txt
+    rm ARG-RESFI_fullgenes_results.txt BIN_Isolate_Typing_results.txt BLACTAM_MIC_RF_with_SIR.txt Serotype_Extraction_Sequence.fna velvet_qual_metrics.txt ./velvet_output/Sequences ./velvet_output/stats.txt ./velvet_output/Log BLACTAM_MIC_RF.txt
+    rm RES-MIC*
+    rm cutadapt_*_R*
+    rm FOLP_target_*
+    rm OUT_*
+    rm TEMP_*
+    rm velvet_output/*Graph*
+    rm -r PBP_to_MIC_temp/
+    rm -r *_R1_cut
+    rm -r *_R2_cut
+else
+    echo "The delete flag is false. Will keep all unneeded files"
+fi
+
+
 
 ###Unload Modules###
 module unload perl/5.22.1

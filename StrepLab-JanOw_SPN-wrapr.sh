@@ -170,17 +170,18 @@ done
 qsub -sync y -q dbd.q -t 1-$(cat $out_jobCntrl/job-control.txt | wc -l) -cwd -o "$out_qsub" -e "$out_qsub" ./StrepLab-JanOw_SPN-Typer.sh $out_jobCntrl
 
 
-###Output the emm type/MLST/drug resistance data for this sample to it's results output file###
+###Output the emm type/MLST/drug resistance data for this sample to its results output file###
 while read -r line
 do
     batch_name=$(echo $line | awk -F" " '{print $1}' | awk -F"/" '{print $(NF-4)}')
     final_outDir=$(echo $line | awk -F" " '{print $5}')
     final_result_Dir=$(echo $line | awk -F" " '{print $4}')
     cat $final_outDir/TABLE_Isolate_Typing_results.txt >> $final_result_Dir/TABLE_SPN_"$batch_name"_Typing_Results.txt
+    rm $final_outDir/TABLE_Isolate_Typing_results.txt
     #cat $final_outDir/BIN_Isolate_Typing_results.txt >> $final_result_Dir/BIN_GBS_"$batch_name"_Typing_Results.txt
-    if [[ -e $final_outDir/TEMP_newPBP_allele_info.txt ]]
+    if [[ -e $final_outDir/newPBP_allele_info.txt ]]
     then
-        cat $final_outDir/TEMP_newPBP_allele_info.txt >> $final_result_Dir/UPDATR_SPN_"$batch_name"_Typing_Results.txt
+        cat $final_outDir/newPBP_allele_info.txt >> $final_result_Dir/UPDATR_SPN_"$batch_name"_Typing_Results.txt
     fi
 done < $out_jobCntrl/job-control.txt
 
