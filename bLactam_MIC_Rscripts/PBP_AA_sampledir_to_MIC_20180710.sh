@@ -1,7 +1,10 @@
 #!/bin/bash -l
 source /etc/profile.d/modules.sh
-module load EMBOSS/6.4.0
-module load  R/3.3.2
+#module load EMBOSS/6.4.0
+#module load  R/3.3.2
+#module load R/4.4.0
+
+module load emboss r
 
 x1="0"
 if [ -d "$1" ]; then
@@ -56,14 +59,15 @@ grep -v ">" temp1.faa >> Sample_PBP2X_AA.faa
 rm -f temp*
 
 #
-scr1="/scicomp/groups/OID/NCIRD/DBD/RDB/Strep_Lab/External/share/PBP_AA_to_MIC/scripts/AAtoMICwrapper_2.sh"
+scr1="/scicomp/groups/Strep_Lab/External/SPN_Scripts_Reference/bLactam_MIC_Rscripts/AAtoMICwrapper_2.sh"
+#scr1="/scicomp/groups/Strep_Lab/External/share/PBP_AA_to_MIC/scripts/AAtoMICwrapper_2.sh"
 bash $scr1 $AAseqDir
 
 # Use Aspen Cluster to run; BioLinux will not work
 
 #
 fin="$AAseqDir"/Sample_PBPtype_MIC2_Prediction.csv
-scr1="/scicomp/groups/OID/NCIRD/DBD/RDB/Strep_Lab/External/share/PBP_AA_to_MIC/scripts/MIC_format_with_SIR.R"
+scr1="/scicomp/groups/Strep_Lab/External/share/PBP_AA_to_MIC/scripts/MIC_format_with_SIR.R"
 Rscript $scr1 $fin
 fout="$AAseqDir"/Sample_PBPtype_MIC2_Prediction.csv_MIC_formatted_with_SIR.csv
 
@@ -92,4 +96,4 @@ echo "BLACTAM MIC output file:" "$d1""/BLACTAM_MIC_RF_with_SIR.txt"
 rm -f temp* 
 #rm -rf $AAseqDir
 
-module unload EMBOSS/6.4.0
+module unload emboss r

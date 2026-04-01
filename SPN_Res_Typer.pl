@@ -286,7 +286,7 @@ sub freebayes_prior_fix {
     open(my $rf,'>',"CHECK_target_ref.fna");
     print $rf "$REF_seq\n";
     close $rf;
-    system("freebayes -q 20 -p 1 -f CHECK_target_ref.fna CHECK_target_seq.bam -v CHECK_target_seq.vcf");
+    system("freebayes -q 20 -p 1 -F 0.2 -f CHECK_target_ref.fna CHECK_target_seq.bam -v CHECK_target_seq.vcf");
     system("bgzip CHECK_target_seq.vcf");
     system("tabix -p vcf CHECK_target_seq.vcf.gz");
     my $extractSeq = `echo "$REF_seq" | vcf-consensus CHECK_target_seq.vcf.gz`;

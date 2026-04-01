@@ -3,8 +3,8 @@
 ## Function PBP_AA_TO_MIC2
 
 PBP_AA_TO_MIC2<- function(cwd){
-  dbdir="/scicomp/groups/OID/NCIRD/DBD/RDB/Strep_Lab/External/share/PBP_AA_to_MIC/newDB/"
-  libpath="/scicomp/groups/OID/NCIRD/DBD/RDB/Strep_Lab/External/share/PBP_AA_to_MIC/Rlib"
+  dbdir="/scicomp/groups/Strep_Lab/External/share/PBP_AA_to_MIC/newDB/"
+  libpath="/scicomp/groups/Strep_Lab/External/share/PBP_AA_to_MIC/Rlib"
   #x1=.libPaths()
   x2=c(libpath, "/usr/lib64/R/library", "/usr/share/R/library")
   .libPaths(x2)
@@ -13,7 +13,7 @@ PBP_AA_TO_MIC2<- function(cwd){
   library("randomForest")
   library('iterators')
   library('foreach')
-  library('glmnet')
+  #library('glmnet')
   
   ## Data processing
   setwd(cwd)
@@ -42,9 +42,10 @@ PBP_AA_TO_MIC2<- function(cwd){
     print (c("processing sample", m2[j1,1]))
     x2=matrix(rep(m2[j1, colAA], n1), ncol=length(colAA), nrow=n1, byrow=T)
     x3=apply((x2 != x1), 1, sum, na.rm=T)
+   
     x4=which(x3==min(x3, na.rm=T))[1]
+ 
     APT[j1]=m1[x4, 1]
-
     x5 = (m2[j1, colAA] != m1[x4, colAA])        
     DIS1A[j1]=sum(x5[grep("PBP1A_", colnames(x5))], na.rm=T)
     DIS2B[j1]=sum(x5[grep("PBP2B_", colnames(x5))], na.rm=T)
@@ -91,7 +92,7 @@ PBP_AA_TO_MIC2<- function(cwd){
   n2=dim(m2.1)[2]
 
 
-  m3=read.csv("/scicomp/groups/OID/NCIRD/DBD/RDB/Strep_Lab/External/share/PBP_AA_to_MIC/scripts/BLOSUM62.csv", colClasses="character", header=T) 
+  m3=read.csv("/scicomp/groups/Strep_Lab/External/share/PBP_AA_to_MIC/scripts/BLOSUM62.csv", colClasses="character", header=T) 
   colnames(m3)[2:25]=m3$src
   m2.1[m2.1=="*"]="-"
   m2.2=m2.1
@@ -109,7 +110,14 @@ PBP_AA_TO_MIC2<- function(cwd){
       for (j2 in x3)
       {
         AA=substr(j2, 1, 1)
-        x4=(x1[order(m3[m3$src==AA, x1], decreasing =T)])[1]
+        
+        y0=m3[m3$src==AA, x1]
+        y1=as.numeric(y0)
+        names(y1)=colnames(y0)
+        x4=(names(y1[order(y1,  decreasing =T)]))[1]
+
+        #x4=(x1[order(m3[m3$src==AA, x1], decreasing =T)])[1] # NOT working in R4.4.0
+        
         x5=m2.1[, j1]
         m2.1[j2==x5, j1]=x4
         print(c(j1, x4))
@@ -163,9 +171,11 @@ PBP_AA_TO_MIC2<- function(cwd){
   m3=m2$sampleID
   for (j1 in 1:6)
   {
-    rm(fit1)
-    load(ENdbMIC[j1])
-    m3=cbind(m3, round(2^predict(fit1, x1, type="response"), 2))
+    #rm(fit1)
+    #load(ENdbMIC[j1])
+    #m3=cbind(m3, round(2^predict(fit1, x1, type="response"), 2))
+    m3=cbind(m3, round(2^1, 2))
+
   }
 
   colnames(m3)[1]="sampleID"
@@ -184,9 +194,10 @@ PBP_AA_TO_MIC2<- function(cwd){
   m3=m2$sampleID
   for (j1 in 1:6)
   {
-    rm(fit1)
-    load(ENdbBK1[j1])
-    m3=cbind(m3, round(predict(fit1, x1, type="response"), 3))
+    #rm(fit1)
+    #load(ENdbBK1[j1])
+    #m3=cbind(m3, round(predict(fit1, x1, type="response"), 3))
+     m3=cbind(m3, round(1, 3))
   }
 
   colnames(m3)[1]="sampleID"

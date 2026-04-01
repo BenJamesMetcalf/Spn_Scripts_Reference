@@ -33,12 +33,13 @@ rm -rf   $faaDir
 mkdir -p $faaDir
 cd $faaDir
 
-scrdir="/scicomp/groups/OID/NCIRD/DBD/RDB/Strep_Lab/External/share/PBP_AA_to_MIC/"
+scrdir="/scicomp/groups/Strep_Lab/External/share/PBP_AA_to_MIC/"
 cp $scrdir"scripts/Ref_PBP_3.faa" .
 cp $AAseqDir"/"*".faa" .
 
 #module load clustal-omega/1.2
-scr1="/scicomp/groups/OID/NCIRD/DBD/RDB/Strep_Lab/External/share/PBP_AA_to_MIC/scripts/Build_PBP_AA_tableR3.2.2.R"
+#scr1="/scicomp/groups/Strep_Lab/External/share/PBP_AA_to_MIC/scripts/Build_PBP_AA_tableR3.2.2.R"
+scr1="/scicomp/groups/Strep_Lab/External/SPN_Scripts_Reference/bLactam_MIC_Rscripts/Build_PBP_AA_tableR3.2.2.R"
 Rscript $scr1 $faaDir
 
 predir=$AAseqDir"/Sample_AAtoMIC/pre/"
@@ -46,13 +47,14 @@ rm -rf   $predir
 mkdir -p $predir
 cp ./Sample_PBP_AA_table.csv $predir
 
-#dbdir="/scicomp/groups/OID/NCIRD/DBD/RDB/Strep_Lab/External/share/PBP_AA_to_MIC/currentDB"
-#dbdir="/scicomp/groups/OID/NCIRD/DBD/RDB/Strep_Lab/External/share/PBP_AA_to_MIC/newDB"
+#dbdir="/scicomp/groups/Strep_Lab/External/share/PBP_AA_to_MIC/currentDB"
+#dbdir="/scicomp/groups/Strep_Lab/External/share/PBP_AA_to_MIC/newDB"
 #cp $dbdir"/"*  $predir
 
 cd $predir
 
-scr1="/scicomp/groups/OID/NCIRD/DBD/RDB/Strep_Lab/External/share/PBP_AA_to_MIC/scripts/AAtable_To_MIC_MM_RF_EN_2.R"
+scr1="/scicomp/groups/Strep_Lab/External/SPN_Scripts_Reference/bLactam_MIC_Rscripts/AAtable_To_MIC_MM_RF_EN_2.R"
+#scr1="/scicomp/groups/Strep_Lab/External/share/PBP_AA_to_MIC/scripts/AAtable_To_MIC_MM_RF_EN_2.R"
 Rscript $scr1 $predir
 
 cp Sample_PBPtype_MIC2_Prediction.csv  $AAseqDir

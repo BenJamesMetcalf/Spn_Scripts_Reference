@@ -167,8 +167,9 @@ do
 done
 
 ###Send the jobs out on the cluster with each sample running in parallel###
-qsub -sync y -q dbd.q -t 1-$(cat $out_jobCntrl/job-control.txt | wc -l) -cwd -o "$out_qsub" -e "$out_qsub" ./StrepLab-JanOw_SPN-Typer.sh $out_jobCntrl
-
+#qsub -sync y -q dbd.q -t 1-$(cat $out_jobCntrl/job-control.txt | wc -l) -cwd -o "$out_qsub" -e "$out_qsub" ./StrepLab-JanOw_SPN-Typer.sh $out_jobCntrl
+#qsub -sync y -q dbd.q,short.q -t 1-$(cat $out_jobCntrl/job-control.txt | wc -l) -cwd -o "$out_qsub" -e "$out_qsub" -l h_vmem=32G,h_rt=2:00:00 -pe smp 8 ./StrepLab-JanOw_SPN-Typer.sh $out_jobCntrl
+qsub -sync y -q all.q,dbd.q -t 1-$(cat $out_jobCntrl/job-control.txt | wc -l) -cwd -o "$out_qsub" -e "$out_qsub" -l h_vmem=32G,h_rt=4:00:00 -pe smp 8 ./StrepLab-JanOw_SPN-Typer.sh $out_jobCntrl
 
 ###Output the emm type/MLST/drug resistance data for this sample to its results output file###
 while read -r line

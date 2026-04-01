@@ -147,7 +147,7 @@ sub freebayes_prior_fix {
     open(my $rf,'>',"CHECK_target_ref.fna");
     print $rf "$REF_seq\n";
     close $rf;
-    system("freebayes -q 20 -p 1 -f CHECK_target_ref.fna CHECK_target_seq.bam -v CHECK_target_seq.vcf");
+    system("freebayes -q 20 -p 1 -F 0.2 -f CHECK_target_ref.fna CHECK_target_seq.bam -v CHECK_target_seq.vcf");
     system("bgzip CHECK_target_seq.vcf");
     system("tabix -p vcf CHECK_target_seq.vcf.gz");
     my $extractSeq = `echo "$REF_seq" | vcf-consensus CHECK_target_seq.vcf.gz`;
@@ -173,7 +173,7 @@ print $fh "Target\tDiffs\tAvgDepth\tSerotype\n";
 
 ###Detect GAS serotype sequence###
 my $sero_outName = "SERO_$outName";
-system("srst2 --samtools_args '\\-A' --input_pe $fastq1 $fastq2 --output $sero_outName --log --save_scores --min_coverage 99.9 --max_divergence 5 --gene_db $sero_DB");
+system("srst2 --samtools_args '\\-A' --input_pe $fastq1 $fastq2 --output $sero_outName --log --save_scores --min_coverage 99.8 --max_divergence 5 --gene_db $sero_DB");
 
 ###mpileup the 'SERO_.*.sorted.bam and create the called variants file with freebayes.
 opendir(DIR, ".") or die "Couldn't open directory for reading: $!";
