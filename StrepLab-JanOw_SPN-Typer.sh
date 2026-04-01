@@ -9,22 +9,23 @@ read -a PARAM <<< $(/bin/sed -n ${SGE_TASK_ID}p $1/job-control.txt)
 
 ###Load Modules###
 #. /usr/share/Modules/init/bash
-#module load perl/5.38.2
-#module load bioperl/1.7.8
-#module load blast+/2.13.0
-#module load bedtools/2.17.0
-#module load freebayes/1.3.5
-#module load prodigal/2.6
-#module load cutadapt/4.6
+#module load perl/5.22.1
+#module load ncbi-blast+/2.2.29
+#module load BEDTools/2.17.0
+#module load freebayes/0.9.21
+#module load prodigal/2.60
+#module load cutadapt/1.8.3
 #module load srst2/0.1.7
-#module load samtools/0.1.18
 
+#module load --ignore_cache
 module load perl/5.38.2
 module load bioperl/1.7.8
 module load blast+/2.13.0
 module load bedtools/2.17.0
 module load freebayes/1.3.5
 module load prodigal/2.6
+#module load cutadapt/4.6
+#module load srst2/0.1.7
 module load samtools/0.1.18
 module load gcccore
 
@@ -37,7 +38,6 @@ readPair_2=${PARAM[1]}
 allDB_dir=${PARAM[2]}
 batch_out=${PARAM[3]}
 sampl_out=${PARAM[4]}
-#delete='true'
 delete='false'
 
 ###Start Doing Stuff###
@@ -71,7 +71,18 @@ srst2 --samtools_args '\\-A' --mlst_delimiter '_' --input_pe "$readPair_1" "$rea
 MLST_allele_checkr.pl "$out_nameMLST"__mlst__Streptococcus_pneumoniae__results.txt "$out_nameMLST"__*.Streptococcus_pneumoniae.sorted.bam "$allDB_dir/Streptococcus_pneumoniae.fasta"
 
 ###Call GBS Serotype###
+#SPN_Serotyper.pl -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir/SPN_Sero_Gene-DB_Final.fasta" -n "$just_name"
+
+###Call SPN Serotype (StrepLab serotyper)###
+#module load srst2/0.1.7
 SPN_Serotyper.pl -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir/SPN_Sero_Gene-DB_Final.fasta" -n "$just_name"
+
+###Call SPN Serotype (SeroBA2)
+seroba1=seroba_"$just_name"_S1_L001_R1.fastq.gz
+seroba2=seroba_"$just_name"_S1_L001_R2.fastq.gz
+cp $readPair_1 $seroba1
+cp $readPair_2 $seroba2
+singularity exec --bind $sampl_out:/data docker://sangerbentleygroup/seroba seroba runSerotyping /seroba/database /data/$seroba1 /data/$seroba2 /data/SeroBA_OUT
 
 ###Call GBS bLactam Resistances###
 #module unload perl/5.22.1
@@ -81,7 +92,7 @@ PBP-Gene_Typer.pl -1 "$readPair_1" -2 "$readPair_2" -r "$allDB_dir/MOD_bLactam_r
 #module load perl/5.22.1
 
 ###Predict bLactam MIC###
-#scr1="/scicomp/groups/Strep_Lab/External/share/PBP_AA_to_MIC/scripts//PBP_AA_sampledir_to_MIC_20180710.sh"
+#scr1="/scicomp/groups/OID/NCIRD/DBD/RDB/Strep_Lab/External/SPN_Scripts_Reference/bLactam_MIC_Rscripts/PBP_AA_sampledir_to_MIC_20180710.sh"
 scr1="/scicomp/groups/Strep_Lab/External/SPN_Scripts_Reference/bLactam_MIC_Rscripts/PBP_AA_sampledir_to_MIC_20180710.sh"
 bash "$scr1" "$sampl_out"
 
@@ -134,6 +145,9 @@ done <<< "$(sed 1d OUT_SeroType_Results.txt)"
 printf "$sero_out\t$pili_out\t" >> "$tabl_out"
 printf "$sero_out,$pili_out\t" >> "$bin_out"
 
+seroba_out=$(cat ./SeroBA_OUT/pred.csv | tail -n1 | cut -d, -f2- | tr ',' '\t')
+printf "$seroba_out\t" >> "$tabl_out"
+
 ###MLST OUTPUT###
 sed 1d "$out_nameMLST"__mlst__Streptococcus_pneumoniae__results.txt | while read -r line
 do
@@ -181,7 +195,8 @@ if [[ ! "$pbpID" =~ .*NF.* ]] #&& [[ ! "$pbpID" =~ .*NEW.* ]]
 then
     echo "No NF outputs for PBP Type"
     bLacTab=$(tail -n1 "BLACTAM_MIC_RF_with_SIR.txt" | tr ' ' '\t')
-    printf "$bLacTab\t" >> "$tabl_out"
+    printf "$bLacTab" >> "$tabl_out"
+    #printf "$bLacTab\t" >> "$tabl_out"
     #bLacCom=$(echo "$line" | tr ' ' ',')
     #printf "$bLacCom," >> "$bin_out"
 else
@@ -222,6 +237,10 @@ fi
 if ${delete};
 then
     echo "The delete flag is true. Will delete all unneeded files"
+    rm SERO_*
+    rm seroba_*
+    rm SeroBA_OUT*
+    rm Serotype_Extraction_Sequence.fna
     rm *.pileup
     rm *.*sorted.*am
     rm *.scores
@@ -246,15 +265,13 @@ fi
 
 
 ###Unload Modules###
-#module unload perl/5.38.2
-#module unload bioperl/1.7.8
-#module unload blast+/2.13.0
-#module unload bedtools/2.17.0
-#module unload freebayes/1.3.5
-#module unload prodigal/2.6
-#module unload cutadapt/4.6
+#module unload perl/5.22.1
+#module unload ncbi-blast+/2.2.29
+#module unload BEDTools/2.17.0
+#module unload freebayes/0.9.21
+#module unload prodigal/2.60
+#module unload cutadapt/1.8.3
 #module unload srst2/0.1.7
-#module unload samtools/0.1.18
 
 module unload perl/5.38.2
 module unload bioperl/1.7.8
@@ -262,6 +279,7 @@ module unload blast+/2.13.0
 module unload bedtools/2.17.0
 module unload freebayes/1.3.5
 module unload prodigal/2.6
+#module unload cutadapt/4.6
 module unload srst2/0.1.7
 module unload samtools/0.1.18
 module unload gcccore

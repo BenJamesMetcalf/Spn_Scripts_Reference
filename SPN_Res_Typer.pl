@@ -286,6 +286,7 @@ sub freebayes_prior_fix {
     open(my $rf,'>',"CHECK_target_ref.fna");
     print $rf "$REF_seq\n";
     close $rf;
+    #system("freebayes -q 20 -p 1 -f CHECK_target_ref.fna CHECK_target_seq.bam -v CHECK_target_seq.vcf");
     system("freebayes -q 20 -p 1 -F 0.2 -f CHECK_target_ref.fna CHECK_target_seq.bam -v CHECK_target_seq.vcf");
     system("bgzip CHECK_target_seq.vcf");
     system("tabix -p vcf CHECK_target_seq.vcf.gz");
@@ -374,6 +375,7 @@ my %Res_Targets = (
     "ERMBS" => "neg",
     "ERMTR" => "neg",
     "TET" => "neg",
+    "LSAC" => "neg",
     "CAT" => "neg",
     );
 
@@ -387,7 +389,7 @@ while(<MYINPUTFILE>) {
     my @miscR_fullgene;
     @miscR_fullgene = split('\t',$line);
     if ($miscR_fullgene[5] >= 10) {
-        if ($miscR_fullgene[3] =~ m/(ERMTR|MEF)/) {
+        if ($miscR_fullgene[3] =~ m/(ERMTR|LSAC|MEF)/) {
             if ($drugRes_Col{"EC"} eq "neg") {
                 $drugRes_Col{"EC"} = $miscR_fullgene[2];
             } else {
@@ -418,6 +420,8 @@ while(<MYINPUTFILE>) {
             $Res_Targets{"RPOB"} = "pos";
         } elsif ($miscR_fullgene[3] =~ m/FOLA/) {
             $Res_Targets{"FOLA"} = "pos";
+	} elsif ($miscR_fullgene[3] =~ m/LSAC/) {
+	    $Res_Targets{"LSAC"} = "pos";
         } elsif ($miscR_fullgene[3] =~ m/PARC/) {
             $Res_Targets{"PARC"} = "pos";
         } elsif ($miscR_fullgene[3] =~ m/GYRA/) {
@@ -494,6 +498,16 @@ while(<MYINPUTFILE>) {
                 }
                 $Res_Targets{"ERMB"} = "pos";
             }
+	} elsif ($miscR_fullgene[3] =~ m/LSAC/i) {#&& $Res_Targets{"LSAC"} eq "neg") {
+	    if ($Res_Targets{"LSAC"} eq "neg") {
+		if ($drugRes_Col{"EC"} eq "neg") {
+		    $drugRes_Col{"EC"} = "LSAC";
+		} else {
+		    my $new_val = $drugRes_Col{"ER_CL"}.":LSAC";
+		    $drugRes_Col{"EC"} = $new_val;
+		}
+		$Res_Targets{"LSAC"} = "pos";
+	    }
         #} elsif ($miscR_fullgene[3] =~ m/LNU/i) {
         #    if ($Res_Targets{"LNUB"} eq "neg") {
         #        if ($drugRes_Col{"EC"} eq "neg") {
@@ -574,7 +588,8 @@ if ($Res_Targets{"RPOB"} eq "pos") {
             print substr($RPOB_aaRef,$-[0],1), ' ', substr($RPOB_aaSeq,$-[0],1), ' ', $-[0], "\n";
             #my $diff_element = "pos".($-[0]+1).":".substr($RPOB_aaRef,$-[0],1)."->".substr($RPOB_aaSeq,$-[0],1);
 	    my $diff_element = substr($RPOB_aaRef,$-[0],1).($-[0]+1).substr($RPOB_aaSeq,$-[0],1);
-            push(@seq_diffs,$diff_element);
+	    my $diff_element2 = substr($RPOB_aaRef,$-[0],1).($-[0]+1+478).substr($RPOB_aaSeq,$-[0],1);
+            push(@seq_diffs,$diff_element2);
         }
         print "RPOB seq: $RPOB_seq\n";
         my $diff_output = join(',',@seq_diffs);
@@ -622,8 +637,9 @@ if ($FOLA_file && ! $FOLA_error) {
             print substr($FOLA_aaRef,$-[0],1), ' ', substr($FOLA_aaSeq,$-[0],1), ' ', $-[0], "\n";
             #my $diff_element = "pos".($-[0]+1).":".substr($RPOB_aaRef,$-[0],1)."->".substr($RPOB_aaSeq,$-[0],1);
             my $diff_element = substr($FOLA_aaRef,$-[0],1).($-[0]+1).substr($FOLA_aaSeq,$-[0],1);
+	    my $diff_element2 = substr($FOLA_aaRef,$-[0],1).($-[0]+1+80).substr($FOLA_aaSeq,$-[0],1);
 	    if ($diff_element !~ /D12[A|V]/ && $diff_element ne "D8G") {
-		push(@seq_diffs,$diff_element);
+		push(@seq_diffs,$diff_element2);
 	    }
         }
         print "FOLA seq: $FOLA_seq\n";
@@ -660,8 +676,9 @@ if ($Res_Targets{"PARC"} eq "pos") {
             print substr($PARC_aaRef,$-[0],1), ' ', substr($PARC_aaSeq,$-[0],1), ' ', $-[0], "\n";
             #my $diff_element = "pos".($-[0]+1).":".substr($RPOB_aaRef,$-[0],1)."->".substr($RPOB_aaSeq,$-[0],1);
             my $diff_element = substr($PARC_aaRef,$-[0],1).($-[0]+1).substr($PARC_aaSeq,$-[0],1);
+	    my $diff_element2 = substr($PARC_aaRef,$-[0],1).($-[0]+1+77).substr($PARC_aaSeq,$-[0],1);
             if ($diff_element ne "G51D" && $diff_element ne "K60N" && $diff_element ne "R18C") {
-		push(@seq_diffs,$diff_element);
+		push(@seq_diffs,$diff_element2);
 	    }
         }
         print "PARC seq: $PARC_seq\n";
@@ -693,7 +710,8 @@ if ($Res_Targets{"GYRA"} eq "pos") {
             print substr($GYRA_aaRef,$-[0],1), ' ', substr($GYRA_aaSeq,$-[0],1), ' ', $-[0], "\n";
             #my $diff_element = "pos".($-[0]+1).":".substr($RPOB_aaRef,$-[0],1)."->".substr($RPOB_aaSeq,$-[0],1);
             my $diff_element = substr($GYRA_aaRef,$-[0],1).($-[0]+1).substr($GYRA_aaSeq,$-[0],1);
-            push(@seq_diffs,$diff_element);
+	    my $diff_element2 = substr($GYRA_aaRef,$-[0],1).($-[0]+1+70).substr($GYRA_aaSeq,$-[0],1);
+            push(@seq_diffs,$diff_element2);
         }
         print "GYRA seq: $GYRA_seq\n";
         my $diff_output = join(',',@seq_diffs);
@@ -740,7 +758,8 @@ if ($Res_Targets{"RPLD1"} eq "pos") {
 	    while ($mask =~ /[^\0]/g) {
 		print substr($RPLD1_aaRef,$-[0],1), ' ', substr($RPLD1_aaSeq,$-[0],1), ' ', $-[0], "\n";
 		my $diff_element = substr($RPLD1_aaRef,$-[0],1).($-[0]+1).substr($RPLD1_aaSeq,$-[0],1);
-		push(@seq_diffs,$diff_element);
+		my $diff_element2 = substr($RPLD1_aaRef,$-[0],1).($-[0]+1+62).substr($RPLD1_aaSeq,$-[0],1);
+		push(@seq_diffs,$diff_element2);
 	    }
 	    print "RPLD1 seq: $RPLD1_seq\n";
 	    my $diff_output = join(',',@seq_diffs);
@@ -768,8 +787,9 @@ if ($Res_Targets{"RPLD2"} eq "pos") {
 	while ($mask =~ /[^\0]/g) {
 	    print substr($RPLD2_aaRef,$-[0],1), ' ', substr($RPLD2_aaSeq,$-[0],1), ' ', $-[0], "\n";
 	    my $diff_element = substr($RPLD2_aaRef,$-[0],1).($-[0]+1).substr($RPLD2_aaSeq,$-[0],1);
+	    my $diff_element2 = substr($RPLD2_aaRef,$-[0],1).($-[0]+1+20).substr($RPLD2_aaSeq,$-[0],1);
 	    if ($diff_element ne "E10K" && $diff_element ne "V13E") {
-		push(@seq_diffs,$diff_element);
+		push(@seq_diffs,$diff_element2);
 	    }
         }
         my $diff_output = join(',',@seq_diffs);
@@ -796,7 +816,8 @@ if ($Res_Targets{"RPLV1"} eq "pos") {
 	while ($mask =~ /[^\0]/g) {
 	    print substr($RPLV1_aaRef,$-[0],1), ' ', substr($RPLV1_aaSeq,$-[0],1), ' ', $-[0], "\n";
 	    my $diff_element = substr($RPLV1_aaRef,$-[0],1).($-[0]+1).substr($RPLV1_aaSeq,$-[0],1);
-	    push(@seq_diffs,$diff_element);
+	    my $diff_element2 = substr($RPLV1_aaRef,$-[0],1).($-[0]+1+101).substr($RPLV1_aaSeq,$-[0],1);
+	    push(@seq_diffs,$diff_element2);
 	}
 	my $diff_output = join(',',@seq_diffs);
         #my $bin_out = join(':',@seq_diffs);
@@ -822,7 +843,8 @@ if ($Res_Targets{"RPLV2"} eq "pos") {
         while ($mask =~ /[^\0]/g) {
             print substr($RPLV2_aaRef,$-[0],1), ' ', substr($RPLV2_aaSeq,$-[0],1), ' ', $-[0], "\n";
             my $diff_element = substr($RPLV2_aaRef,$-[0],1).($-[0]+1).substr($RPLV2_aaSeq,$-[0],1);
-            push(@seq_diffs,$diff_element);
+	    my $diff_element2 = substr($RPLV2_aaRef,$-[0],1).($-[0]+1+83).substr($RPLV2_aaSeq,$-[0],1);
+            push(@seq_diffs,$diff_element2);
         }
         my $diff_output = join(',',@seq_diffs);
         #my $bin_out = join(':',@seq_diffs);
@@ -854,7 +876,8 @@ if ($Res_Targets{"R23S1"} eq "pos") {
         while ($mask =~ /[^\0]/g) {
             print substr($R23S1_ntRef,$-[0],1), ' ', substr($R23S1_ntSeq,$-[0],1), ' ', $-[0], "\n";
             my $diff_element = substr($R23S1_ntRef,$-[0],1).($-[0]+1).substr($R23S1_ntSeq,$-[0],1);
-            push(@seq_diffs,$diff_element);
+	    my $diff_element2 = substr($R23S1_ntRef,$-[0],1).($-[0]+1+2040).substr($R23S1_ntSeq,$-[0],1);
+            push(@seq_diffs,$diff_element2);
         }
         my $diff_output = join(',',@seq_diffs);
         #my $bin_out = join(':',@seq_diffs);
@@ -881,7 +904,8 @@ if ($Res_Targets{"R23S2"} eq "pos") {
         while ($mask =~ /[^\0]/g) {
             print substr($R23S2_ntRef,$-[0],1), ' ', substr($R23S2_ntSeq,$-[0],1), ' ', $-[0], "\n";
             my $diff_element = substr($R23S2_ntRef,$-[0],1).($-[0]+1).substr($R23S2_ntSeq,$-[0],1);
-            push(@seq_diffs,$diff_element);
+	    my $diff_element2 = substr($R23S2_ntRef,$-[0],1).($-[0]+1+2599).substr($R23S2_ntSeq,$-[0],1);
+            push(@seq_diffs,$diff_element2);
         }
         my $diff_output = join(',',@seq_diffs);
         #my $bin_out = join(':',@seq_diffs);
@@ -945,9 +969,9 @@ while(<MYINPUTFILE>) {
         if (length($ref_allele) != length($alt_allele) && $FOLP_dp >= 5) {
 	    my $FOLP_out;
             if (length($ref_allele) > length($alt_allele)) {
-		$FOLP_out = "FOLP_".$FOLP_loc."-del";
+		$FOLP_out = "FOLP_".($FOLP_loc+166)."-del";  #$FOLP_loc+166
 	    } else {
-		$FOLP_out = "FOLP_".$FOLP_loc."-ins";
+		$FOLP_out = "FOLP_".($FOLP_loc+166)."-ins";
             }
 	    if ($drugRes_Col{"COT"} eq "neg") {
 		$drugRes_Col{"COT"} = $FOLP_out;

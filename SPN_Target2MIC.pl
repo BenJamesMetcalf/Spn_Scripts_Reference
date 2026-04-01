@@ -53,7 +53,7 @@ my $left_side = "no";
 if ($Res_hash{"EC"} eq "neg") {
     #print "ER_CL,$Res_hash{EC},".$drug{ERY}.",".$drug{CLI}.",".$drug{SYN}.",".$drug{LZO}.",".$drug{ERY_CLI}."\n";
     $Out_hash{EC} = "$Res_hash{EC},$drug{ERY},$drug{CLI},$drug{SYN},$drug{LZO},$drug{ERY_CLI}";
-} elsif (!grep(/R23S1.*(A(21|29)G|C(5|9)T)/i,@Res_targs) && !grep(/RPLD1.*(5K|G9R|Q5K|K6E)/i,@Res_targs)) {
+} elsif (!grep(/R23S1.*(A(2061|2069)G|C(2045|2049)T)/i,@Res_targs) && !grep(/RPLD1.*(67K|G71R|Q67K|K68E)/i,@Res_targs)) {
     if (grep (/(R23S1|RPLD1|RPLV)/i,@Res_targs)) { 
 	print "I'm in the right side of the EC decision tree\n";
 	#flag everything
@@ -67,7 +67,15 @@ if ($Res_hash{"EC"} eq "neg") {
 	    $drug{ERY} = ">,32,R";
 	    $drug{CLI} = ">,2,R";
 	    $drug{ERY_CLI} = "pos";
-	    if (grep (/LSA/i,@Res_targs)) {
+	    if (grep (/LSAC/i,@Res_targs)) {
+		$drug{SYN} = "Flag,Flag,Flag";
+	    }
+	}
+        if (grep (/ERM/i,@Res_targs) && grep(/ERMBS/i,@Res_targs) && grep(/ERMBUP/i,@Res_targs)) {
+	    $drug{ERY} = "Flag,Flag,Flag";
+	    $drug{CLI} = "=,0.06,S";
+	    $drug{ERY_CLI} = "neg";
+	    if (grep (/LSAC/i,@Res_targs)) {
 		$drug{SYN} = "Flag,Flag,Flag";
 	    }
 	}
@@ -84,13 +92,13 @@ if ($left_side eq "yes") {
     print "I'm in the left side of the EC decision tree\n";
     #Go to left side of decision tree
     #Check for 3 known R23S Mutations (not R23SA21G)
-    if (grep (/R23S1.*(A29G|C(5|9)T)/i,@Res_targs)) {
+    if (grep (/R23S1.*(A2069G|C(2045|2049)T)/i,@Res_targs)) {
 	print "Found R23S1\n";
 	$drug{ERY} = "<=,0.25,S";
         $drug{CLI} = "<=,0.25,S";
     } 
     #Check for 4 known RPLD mutations
-    if (grep (/RPLD1.*(5K|G9R|Q5K|K6E)/i,@Res_targs)) {
+    if (grep (/RPLD1.*(67K|G71R|Q67K|K68E)/i,@Res_targs)) {
 	print "Found RPLD1\n";
 	$drug{ERY} = "<=,0.25,S";
         $drug{CLI} = "<=,0.25,S";
@@ -101,17 +109,17 @@ if ($left_side eq "yes") {
         $drug{ERY} = "=,8,R";
     }
     #Check for LSA/LNU
-    if (grep(/LSA/i,@Res_targs)) {
-        print "Found LSA\n";
-        $drug{CLI} = ">=,1,R";
+    if (grep(/LSAC/i,@Res_targs)) {
+        print "Found LSAC\n";
+        $drug{CLI} = "=,0.5,I";
     }
     if (grep(/LNU/i,@Res_targs)) {
         print "Found LNU\n";
         $drug{CLI} = "Flag,Flag,Flag";
     }
     #Check for R32SA21G and ERMB+ERMBS targets
-    if (grep (/R23S1.*A21G/i,@Res_targs)) {
-	print "Found R23S1-A21G\n";
+    if (grep (/R23S1.*A2061G/i,@Res_targs)) {
+	print "Found R23S1-A2061G\n";
 	$drug{ERY} = ">,32.0,R";
         $drug{CLI} = "=,1.0,R";
         $drug{ERY_CLI} = "pos";
@@ -121,7 +129,15 @@ if ($left_side eq "yes") {
 	$drug{ERY} = ">,32,R";
 	$drug{CLI} = ">,2,R";
 	$drug{ERY_CLI} = "pos";
-	if (grep (/LSA/i,@Res_targs)) {
+	if (grep (/LSAC/i,@Res_targs)) {
+	    $drug{SYN} = "Flag,Flag,Flag";
+	}
+    }
+    if (grep (/ERM/i,@Res_targs) && grep(/ERMBS/i,@Res_targs) && grep(/ERMBUP/i,@Res_targs)) {
+	$drug{ERY} = "Flag,Flag,Flag";
+	$drug{CLI} = "=,0.06,S";
+	$drug{ERY_CLI} = "neg";
+	if (grep (/LSAC/i,@Res_targs)) {
 	    $drug{SYN} = "Flag,Flag,Flag";
 	}
     }
@@ -137,19 +153,19 @@ if ($Res_hash{"COT"} eq "neg") {
     $Out_hash{"COT"} = "$Res_hash{COT},$drug{SXT}";
 } else {
     #if (grep(/^FOLA-I20L$/i,@Res_targs)) {
-    if (grep(/FOLA.*I20L/i,@Res_targs)) {
+    if (grep(/FOLA.*I100L/i,@Res_targs)) {
 	if (grep(/FOLP_.*-ins/i,@Res_targs)) {
-	    print "Found I20L AND FOLP insert\n";
+	    print "Found I100L AND FOLP insert\n";
             $drug{SXT} = ">=,4,R";
 	} else {
-	    print "Found I20L\n";
+	    print "Found I100L\n";
 	    $drug{SXT} = "=,2,I";
 	}
     #} elsif (grep(/FOLP_.*-ins/i,@Res_targs) && (!grep(/FOLA/i,@Res_targs) || grep(/^FOLA-(I20L|D12N)$/i,@Res_targs))) {
-    } elsif (grep(/FOLP_.*-ins/i,@Res_targs) && (!grep(/FOLA/i,@Res_targs) || grep(/^FOLA-D12N$/i,@Res_targs))) {
+    } elsif (grep(/FOLP_.*-ins/i,@Res_targs) && (!grep(/FOLA/i,@Res_targs) || grep(/^FOLA-D92N$/i,@Res_targs))) {
 	print "Found FOLP insert\n";
 	$drug{SXT} = "=,2,I";
-    } elsif (!grep(/^FOLA-D12N$/i,@Res_targs)) {
+    } elsif (!grep(/^FOLA-D92N$/i,@Res_targs)) {
 	print "Found new COT target\n";
         $drug{SXT} = "Flag,Flag,Flag";
     }
@@ -176,7 +192,7 @@ $drug{LFX} = "<=,2,S";
 @Res_targs = split(':',$Res_hash{FQ});
 if ($Res_hash{"FQ"} eq "neg") {
     $Out_hash{"FQ"} = "$Res_hash{FQ},$drug{CIP},$drug{LFX}";
-} elsif (!grep(/GYRA/i,@Res_targs) && grep(/PARC-S2[F|Y]/i,@Res_targs)) {
+} elsif (!grep(/GYRA/i,@Res_targs) && grep(/PARC-S79[F|Y]/i,@Res_targs)) {
     $Out_hash{"FQ"} = "$Res_hash{FQ},$drug{CIP},$drug{LFX}";
 } else {
     $drug{LFX} = "Flag,Flag,Flag";
@@ -218,3 +234,4 @@ if ($Res_hash{"OTHER"} eq "neg") {
 
 print $fh $Out_hash{EC}.",". $Out_hash{COT}.",".$Out_hash{TET}.",".$Out_hash{FQ}.",".$Out_hash{OTHER}."\n";
 print "$Out_hash{EC}||$Out_hash{COT}||$Out_hash{TET}||$Out_hash{FQ}||$Out_hash{OTHER}\n";
+=cut
