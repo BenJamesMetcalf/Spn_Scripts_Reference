@@ -1,8 +1,10 @@
 #!/bin/bash -l
 
-. /usr/share/Modules/init/bash
-module load Python/2.7
-module load ncbi-blast+/2.2.29
+#. /usr/share/Modules/init/bash
+#module load Python/2.7
+#module load ncbi-blast+/2.2.29
+module load python/2.7.15
+module load blast+/2.17.0
 
 #Comment blah...#
 
@@ -168,15 +170,15 @@ blastTyper () {
                if [[ "$4" == "1A" ]]
                then
 		   echo "New PBP 1A: $pbpAlleleID"
-		   echo "$line" | awk -v var="$pbpAlleleID" -v OFS='\t' '{$12=var; print }' >> "$5"_PRE
+		   echo "$line" | awk -v var="$pbpAlleleID" -v OFS='\t' '{$15=var; print }' >> "$5"_PRE #old 12
                elif [[ "$4" == "2B" ]]
                then
 		   echo "New PBP 2B: $pbpAlleleID"
-                   echo "$line" | awk -v var="$pbpAlleleID" -v OFS='\t' '{$13=var; print }' >> "$5"_PRE
+                   echo "$line" | awk -v var="$pbpAlleleID" -v OFS='\t' '{$16=var; print }' >> "$5"_PRE #old 13
                elif [[ "$4" == "2X" ]]
                then
 		   echo "New PBP 2X: $pbpAlleleID"
-		   echo "$line" | awk -v var="$pbpAlleleID" -v OFS='\t' '{$14=var; print }' >> "$5"_PRE
+		   echo "$line" | awk -v var="$pbpAlleleID" -v OFS='\t' '{$17=var; print }' >> "$5"_PRE #old 14
                fi
            else
                echo "$line" >> "$5"_PRE
@@ -214,5 +216,7 @@ do
 done < "$update_PBP"
 
 
-module unload Python/2.7
-module unload ncbi-blast+/2.2.29
+#module unload Python/2.7
+#module unload ncbi-blast+/2.2.29
+module unload python/2.7.15
+module unload blast+/2.17.0

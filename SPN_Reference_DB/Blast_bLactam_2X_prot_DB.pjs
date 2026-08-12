@@ -1,0 +1,22 @@
+{
+  "version": "1.2",
+  "dbname": "Blast_bLactam_2X_prot_DB",
+  "dbtype": "Protein",
+  "db-version": 5,
+  "description": "/scicomp/groups/Strep_Lab/External/SPN_Scripts_Reference/SPN_Reference_DB/SPN_bLactam_2X-DB.faa",
+  "number-of-letters": 386667,
+  "number-of-sequences": 1080,
+  "last-updated": "2026-05-05T14:08:00",
+  "number-of-volumes": 1,
+  "bytes-total": 531578,
+  "bytes-to-cache": 396580,
+  "files": [
+    "Blast_bLactam_2X_prot_DB.pdb",
+    "Blast_bLactam_2X_prot_DB.phr",
+    "Blast_bLactam_2X_prot_DB.pin",
+    "Blast_bLactam_2X_prot_DB.pot",
+    "Blast_bLactam_2X_prot_DB.psq",
+    "Blast_bLactam_2X_prot_DB.ptf",
+    "Blast_bLactam_2X_prot_DB.pto"
+  ]
+}

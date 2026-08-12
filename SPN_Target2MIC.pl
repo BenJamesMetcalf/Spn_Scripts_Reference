@@ -209,7 +209,7 @@ if ($Res_hash{"OTHER"} eq "neg") {
     $Out_hash{"OTHER"} = "$Res_hash{OTHER},$drug{CHL},$drug{RIF},$drug{VAN},$drug{DAP}";
 } else {
     my @Res_targs = split(':',$Res_hash{OTHER});
-    if ($Res_hash{OTHER} ne "ant(6)-Ia:Ant6-Ia_AGly:aph(3')-III:Aph3-III_AGly:Sat4A_Agly" && $Res_hash{OTHER} ne "aph(3')-III:Aph3-III_AGly:Sat4A_AGly" && $Res_hash{OTHER} ne "msr(D):MsrD_MLS") {
+    if ($Res_hash{OTHER} ne "ant(6)-Ia:Ant6-Ia_AGly:aph(3')-III:Aph3-III_AGly:Sat4A_Agly" && $Res_hash{OTHER} ne "aph(3')-III:Aph3-III_AGly:Sat4A_AGly" && $Res_hash{OTHER} ne "msr(D):MsrD_MLS" && $Res_hash{OTHER} ne "lsa(C):msr(D):MsrD_MLS") {
         foreach my $target (@Res_targs) {
 	    if ($target =~ m/CAT|RPOB|MSR/i) {
 		if ($target =~ m/CAT/i) {

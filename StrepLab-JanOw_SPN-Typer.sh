@@ -145,8 +145,13 @@ done <<< "$(sed 1d OUT_SeroType_Results.txt)"
 printf "$sero_out\t$pili_out\t" >> "$tabl_out"
 printf "$sero_out,$pili_out\t" >> "$bin_out"
 
-seroba_out=$(cat ./SeroBA_OUT/pred.csv | tail -n1 | cut -d, -f2- | tr ',' '\t')
-printf "$seroba_out\t" >> "$tabl_out"
+if [ -f "./SeroBA_OUT/pred.csv" ]
+then
+    seroba_out=$(cat ./SeroBA_OUT/pred.csv | tail -n1 | cut -d, -f2- | tr ',' '\t')
+    printf "$seroba_out\t" >> "$tabl_out"
+else
+    printf 'SeroBA_Fail\tNA\tNA\t' >> "$tabl_out"
+fi
 
 ###MLST OUTPUT###
 sed 1d "$out_nameMLST"__mlst__Streptococcus_pneumoniae__results.txt | while read -r line
@@ -201,8 +206,8 @@ then
     #printf "$bLacCom," >> "$bin_out"
 else
     echo "One of the PBP types has an NF"
-    printf "NF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\t" >> "$tabl_out"
-    #printf "NF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF," >> "$bin_out"
+    #printf "NF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\t" >> "$tabl_out"
+    printf "NF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\tNF\t" >> "$tabl_out"
 fi
 
 

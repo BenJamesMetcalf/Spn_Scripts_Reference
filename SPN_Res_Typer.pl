@@ -420,8 +420,8 @@ while(<MYINPUTFILE>) {
             $Res_Targets{"RPOB"} = "pos";
         } elsif ($miscR_fullgene[3] =~ m/FOLA/) {
             $Res_Targets{"FOLA"} = "pos";
-	} elsif ($miscR_fullgene[3] =~ m/LSAC/) {
-	    $Res_Targets{"LSAC"} = "pos";
+        } elsif ($miscR_fullgene[3] =~ m/LSAC/) {
+            $Res_Targets{"LSAC"} = "pos";
         } elsif ($miscR_fullgene[3] =~ m/PARC/) {
             $Res_Targets{"PARC"} = "pos";
         } elsif ($miscR_fullgene[3] =~ m/GYRA/) {
@@ -503,7 +503,7 @@ while(<MYINPUTFILE>) {
 		if ($drugRes_Col{"EC"} eq "neg") {
 		    $drugRes_Col{"EC"} = "LSAC";
 		} else {
-		    my $new_val = $drugRes_Col{"ER_CL"}.":LSAC";
+		    my $new_val = $drugRes_Col{"EC"}.":LSAC";
 		    $drugRes_Col{"EC"} = $new_val;
 		}
 		$Res_Targets{"LSAC"} = "pos";
