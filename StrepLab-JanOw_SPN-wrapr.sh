@@ -188,4 +188,4 @@ done < $out_jobCntrl/job-control.txt
 
 final_result_Dir=$(head -n1 $out_jobCntrl/job-control.txt | awk -F" " '{print $4}')
 cut -d$'\t' -f39,40,41,42,43,44,45,46,47,48,49,50,77,78,79,93,94,95 --complement $final_result_Dir/TABLE_SPN_"$batch_name"_Typing_Results2.txt > $final_result_Dir/TABLE_SPN_"$batch_name"_Typing_Results.txt
-#rm $final_result_Dir/TABLE_SPN_"$batch_name"_Typing_Results2.txt
+rm $final_result_Dir/TABLE_SPN_"$batch_name"_Typing_Results2.txt

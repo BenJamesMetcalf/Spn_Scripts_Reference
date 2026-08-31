@@ -207,10 +207,10 @@ while(<MYINPUTFILE>) {
 #print Dumper(\%srst2HSH);
 
 my %singlTarg95 = ( 
-    'WZY1' => '1', 'WZY2' => '2', 'WCHE3' => '3', 'WZY4' => '4', 'WZY5' => '5', 'WZY8' => '8', 'WCRG10A' => '10A', 'GTF10F' => '10F', 'WZY11A' => '11A', 'WZY11B:11C' => '11B/C', 
-    'WCII12A:12B:46' => '12A/B:46', 'WCII12F' => '12F', 'WZY13' => '13', 'WZY14' => '14', 'WZY16F' => '16F', 'GTF17F' => '17F', 'WZY20' => '20', 'WZY21' => '21', 
-    'WZY23A' => '23A', 'WZY23B' => '23B', 'WZY23F' => '23F', 'WZY24F:24A:24B' => '24A/B/F', 'WCYE25A:25F' => '25A/F', 'WZY28A' => '28A', 'WZY31' => '31', 'TTS' => '37', 
-    'WZY34' => '34', 'WZY35A' => '35A', 'WZY35C:42' => '35C/42', 'WCRO35F' => '35F', 'WHAI47F' => '47F', 'WCYV38' => '38', 'RRGA' => 'PI-1', 'PITB' => 'PI-2',
+    'WZY1' => '1', 'WZY2' => '2', 'WCHE3' => '3', 'WZY4' => '4', 'WZY5' => '5', 'WZY8' => '8', 'WCRG10A' => '10A', 'GTF10F' => '10F', 'WZY11A' => '11A', 'WZY11B:11C' => '11B:11C', 
+    'WCII12A:12B:46' => '12A:12B:46', 'WCII12F' => '12F', 'WZY13' => '13', 'WZY14' => '14', 'WZY16F' => '16F', 'GTF17F' => '17F', 'WZY20' => '20', 'WZY21' => '21', 
+    'WZY23A' => '23A', 'WZY23B' => '23B', 'WZY23F' => '23F', 'WZY24F:24A:24B' => '24A:24B:24F', 'WCYE25A:25F' => '25A:25F', 'WZY28A' => '28A', 'WZY31' => '31', 'TTS' => '37', 
+    'WZY34' => '34', 'WZY35A' => '35A', 'WZY35C:42' => '35C:42', 'WCRO35F' => '35F', 'WHAI47F' => '47F', 'WCYV38' => '38', 'RRGA' => 'PI-1', 'PITB' => 'PI-2',
 );
 
 my %singlTarg100 = ( 
